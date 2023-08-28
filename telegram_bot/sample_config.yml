@@ -1,0 +1,14 @@
+api_id: 1234 #replace 1234 with your api_id
+api_hash: 'insert your api_hash here'
+bot_name: 'insert your bot name here' # your bot name
+bot_token: 'insert your bot token here'
+bot_user_id: 'insert your bot user id here'
+
+
+# group ids like: [input, output], example [-438174992, -265832181]
+# get channel id-s from telegram url example:
+# https://web.telegram.org/#/im?p=g265832181
+# g265832181 is the group id, replace g with -
+# g265832181 -> -265832181
+# and insert it into the list below
+

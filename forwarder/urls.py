@@ -20,6 +20,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import routers, permissions
 
 from bot import views
+from bot.views import LoginView, LogoutView
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
@@ -52,7 +53,9 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0),
          name='schema-redoc'),  #<-- Here
     path('', include(router.urls)),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='login'),
 ]
 
 urlpatterns += router.urls
