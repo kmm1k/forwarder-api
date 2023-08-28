@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'bot',
     'drf_yasg',
-    'corsheaders'
+    'corsheaders',
     'rest_framework.authtoken',
 ]
 
