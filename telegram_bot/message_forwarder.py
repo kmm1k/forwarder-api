@@ -18,6 +18,8 @@ class MessageForwarder:
 
     async def start(self, config):
         from bot.models import Forwarding
+        from bot.models import TagGroups
+
         self.bot_name = config["bot_name"]
         bot = TelegramClient(config["bot_name"],
                              config["api_id"],
@@ -26,6 +28,20 @@ class MessageForwarder:
         logger.info("loaded configs and starting")
 
         at_bot_pattern = f'(?i)@{self.bot_name}.+'
+        at_tag_pattern = f'(?i)@.+'
+
+        @bot.on(events.NewMessage(pattern=at_tag_pattern))
+        async def handler(event: NewMessage.Event):
+            logger.info(event)
+            tagGroups = await sync_to_async(list)(TagGroups.objects.all().filter(tag=event.text))
+
+            for i in tagGroups:
+                logger.info(f"tagging {i.tag} with {i.usernames}")
+                usernames = i.usernames.split(',')
+                output = ""
+                for k in usernames:
+                    output += f'{k.strip()} '
+                await bot.send_message(int(event.chat_id), output)
 
         @bot.on(events.NewMessage(pattern=at_bot_pattern))
         async def handler(event: NewMessage.Event):
