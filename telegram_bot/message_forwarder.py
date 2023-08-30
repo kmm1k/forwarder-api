@@ -36,7 +36,7 @@ class MessageForwarder:
         async def from_to_forwarding(event):
             forwardings = await sync_to_async(list)(Forwarding.objects.all().filter(from_chat=event.chat_id))
             for i in forwardings:
-                logger.info(f"forwarded {i.tag} to {i.to_chats}")
+                logger.info(f"forwarded {i.from_chat} to {i.to_chats}")
                 await bot.send_message(event.chat_id, 'Booked!')
                 to_chats = i.to_chats.split(',')
                 for i in to_chats:
@@ -45,9 +45,9 @@ class MessageForwarder:
         async def to_from_forwarding(event):
             forwardings = await sync_to_async(list)(Forwarding.objects.all().filter(to_chats__contains=event.chat_id))
             for i in forwardings:
-                logger.info(f"forwarded {i.tag} to {i.to_chats}")
+                logger.info(f"forwarded {i.from_chat} to {i.to_chats}")
                 await bot.send_message(event.chat_id, 'Sending something back!')
-                await bot.forward_messages(int(i.tag.strip()), event.id, event.chat_id)
+                await bot.forward_messages(int(i.from_chat.strip()), event.id, event.chat_id)
 
         await bot.run_until_disconnected()
 

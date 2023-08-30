@@ -21,13 +21,13 @@ class ForwardingSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['id', 'from_chat', 'to_chats']
 
 
-class TaggerSerializer(serializers.HyperlinkedModelSerializer):
+class TagGroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = TagGroups
-        fields = '__all__'
+        fields = ['id', 'tag', 'usernames']
 
 
 class TagForwardingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = TagForwarding
-        fields = '__all__'
+        fields = ['id', 'tag', 'to_chats']

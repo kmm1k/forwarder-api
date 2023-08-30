@@ -7,7 +7,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 
 from bot.models import Forwarding, TagGroups, TagForwarding
-from bot.serializers import GroupSerializer, UserSerializer, ForwardingSerializer, TaggerSerializer, \
+from bot.serializers import GroupSerializer, UserSerializer, ForwardingSerializer, TagGroupSerializer, \
     TagForwardingSerializer
 
 
@@ -44,7 +44,7 @@ class TagGroupViewSet(viewsets.ModelViewSet):
     API endpoint that allows groups to be viewed or edited.
     """
     queryset = TagGroups.objects.all()
-    serializer_class = TaggerSerializer
+    serializer_class = TagGroupSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
 
