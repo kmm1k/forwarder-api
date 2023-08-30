@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group, User
 from rest_framework import serializers
-from bot.models import Forwarding, Tagger, TagForwarding
+from bot.models import Forwarding, TagGroups, TagForwarding
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -23,7 +23,7 @@ class ForwardingSerializer(serializers.HyperlinkedModelSerializer):
 
 class TaggerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = Tagger
+        model = TagGroups
         fields = '__all__'
 
 

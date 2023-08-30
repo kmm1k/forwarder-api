@@ -1,12 +1,12 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group, User
 from rest_framework import permissions, viewsets, status
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication, BasicAuthentication
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 
-from bot.models import Forwarding, Tagger, TagForwarding
+from bot.models import Forwarding, TagGroups, TagForwarding
 from bot.serializers import GroupSerializer, UserSerializer, ForwardingSerializer, TaggerSerializer, \
     TagForwardingSerializer
 
@@ -36,17 +36,17 @@ class ForwardingViewSet(viewsets.ModelViewSet):
     queryset = Forwarding.objects.all()
     serializer_class = ForwardingSerializer
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
 
 
-class TaggerViewSet(viewsets.ModelViewSet):
+class TagGroupViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows groups to be viewed or edited.
     """
-    queryset = Tagger.objects.all()
+    queryset = TagGroups.objects.all()
     serializer_class = TaggerSerializer
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
 
 
 class TagForwardingViewSet(viewsets.ModelViewSet):
@@ -56,7 +56,7 @@ class TagForwardingViewSet(viewsets.ModelViewSet):
     queryset = TagForwarding.objects.all()
     serializer_class = TagForwardingSerializer
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
 
 
 class LoginView(APIView):
@@ -75,7 +75,7 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
 
     def post(self, request):
         # simply delete the token to force a login

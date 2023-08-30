@@ -26,8 +26,8 @@ router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'forwardings', views.ForwardingViewSet)
-router.register(r'taggers', views.TaggerViewSet)
-router.register(r'tagforwardings', views.TaggerViewSet)
+router.register(r'tag-groups', views.TagGroupViewSet)
+router.register(r'tagforwardings', views.TagForwardingViewSet)
 
 
 schema_view = get_schema_view(

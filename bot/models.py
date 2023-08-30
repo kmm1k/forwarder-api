@@ -12,7 +12,7 @@ class Forwarding(models.Model):
         app_label = ('bot')
 
 
-class Tagger(models.Model):
+class TagGroups(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     tag = models.CharField(max_length=100, blank=True, default='')
     taggees = models.CharField(max_length=1000, blank=True, default='')
@@ -24,7 +24,7 @@ class Tagger(models.Model):
 
 class TagForwarding(models.Model):
     created = models.DateTimeField(auto_now_add=True)
-    from_chat = models.CharField(max_length=100, blank=True, default='')
+    tag = models.CharField(max_length=100, blank=True, default='')
     to_chats = models.CharField(max_length=1000, blank=True, default='')
 
     class Meta:
