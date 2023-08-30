@@ -19,6 +19,7 @@ class MessageForwarder:
     async def start(self, config):
         from bot.models import Forwarding
         from bot.models import TagGroups
+        from bot.models import TagForwarding
 
         self.bot_name = config["bot_name"]
         bot = TelegramClient(config["bot_name"],
@@ -33,9 +34,26 @@ class MessageForwarder:
         @bot.on(events.NewMessage(pattern=at_tag_pattern))
         async def handler(event: NewMessage.Event):
             logger.info(event)
-            tagGroups = await sync_to_async(list)(TagGroups.objects.all().filter(tag=event.text))
+            await tag_grouper(event)
+            await tag_forwarding(event)
 
-            for i in tagGroups:
+        async def tag_forwarding(event):
+            first_word = event.text.split(' ')[0]
+            tag_forwardings = await sync_to_async(list)(TagForwarding.objects.all().filter(tag=first_word))
+            for i in tag_forwardings:
+                logger.info(f"forwarding {i.tag} to {i.to_chats}")
+                to_chats = i.to_chats.split(',')
+                for k in to_chats:
+                    logger.info(f"forwarding {i.tag} to {k}, event chatId is {event.chat_id}")
+                    if int(k.strip()) is not int(event.chat_id):
+                        await bot.send_message(int(k.strip()), event.text)
+                        file = await bot.download_media(event.message.media, file=bytes)
+                        await bot.send_message(int(k.strip()), event.message.message, file=file)
+
+
+        async def tag_grouper(event):
+            tag_groups = await sync_to_async(list)(TagGroups.objects.all().filter(tag=event.text))
+            for i in tag_groups:
                 logger.info(f"tagging {i.tag} with {i.usernames}")
                 usernames = i.usernames.split(',')
                 output = ""
