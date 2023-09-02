@@ -30,4 +30,4 @@ class TagGroupSerializer(serializers.HyperlinkedModelSerializer):
 class TagForwardingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = TagForwarding
-        fields = ['id', 'tag', 'to_chats']
+        fields = ['id', 'tag', 'to_chats', 'allowed_users']
