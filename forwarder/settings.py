@@ -134,4 +134,5 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:5173',
+    'https://d3qk8ojtqavl2g.cloudfront.net',
 ]

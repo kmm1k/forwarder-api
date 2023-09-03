@@ -44,6 +44,8 @@ class MessageForwarder:
                 to_chats = [chat.strip() for chat in to_chats]
                 allowed_users = i.allowed_users
                 allowed_users = [user.strip() for user in allowed_users]
+                logger.info(f"allowed users are {allowed_users}")
+                logger.info(f"event sender id is {event.sender_id}")
                 for k in to_chats:
                     logger.info(f"trying to forward {i.tag} to {k}, event chatId is {event.chat_id}")
                     if ((str(event.sender_id) in allowed_users or len(allowed_users) == 0)
@@ -89,7 +91,7 @@ class MessageForwarder:
                     forwardings.append(i)
             for i in forwardings:
                 logger.info(f"forwarded {i.from_chat} to {i.to_chats}")
-                await bot.send_message(event.chat_id, 'Sending something back!')
+                await bot.send_message(event.chat_id, 'Message sent back')
                 await bot.forward_messages(int(i.from_chat.strip()), event.id, event.chat_id)
 
         await bot.run_until_disconnected()
