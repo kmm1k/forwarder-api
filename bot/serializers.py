@@ -16,7 +16,6 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ForwardingSerializer(serializers.HyperlinkedModelSerializer):
-    from_chat = serializers.ListField(child=serializers.CharField())
     to_chats = serializers.ListField(child=serializers.CharField())
 
     class Meta:
@@ -25,7 +24,6 @@ class ForwardingSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TagGroupSerializer(serializers.HyperlinkedModelSerializer):
-    tag = serializers.ListField(child=serializers.CharField())
     usernames = serializers.ListField(child=serializers.CharField())
 
     class Meta:
@@ -34,7 +32,6 @@ class TagGroupSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class TagForwardingSerializer(serializers.HyperlinkedModelSerializer):
-    tag = serializers.ListField(child=serializers.CharField())
     to_chats = serializers.ListField(child=serializers.CharField())
     allowed_users = serializers.ListField(child=serializers.CharField())
 
