@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import time
 
 import yaml
 from asgiref.sync import sync_to_async
@@ -41,15 +40,12 @@ class MessageForwarder:
             first_word = event.text.split(' ')[0]
             tag_forwardings = await sync_to_async(list)(TagForwarding.objects.all().filter(tag=first_word))
             for i in tag_forwardings:
-                logger.info(f"forwarding {i.tag} to {i.to_chats}")
-                to_chats = i.to_chats.split(',')
+                to_chats = i.to_chats
                 to_chats = [chat.strip() for chat in to_chats]
-                allowed_users = i.allowed_users.split(',')
-                allowed_users = [int(user.strip()) for user in allowed_users]
-                logger.info(f"allowed users are {allowed_users}, message from: {event.sender_id}")
+                allowed_users = i.allowed_users
                 for k in to_chats:
-                    logger.info(f"forwarding {i.tag} to {k}, event chatId is {event.chat_id}")
-                    if ((int(event.sender_id) in allowed_users or len(allowed_users) == 0)
+                    logger.info(f"trying to forward {i.tag} to {k}, event chatId is {event.chat_id}")
+                    if ((str(event.sender_id) in allowed_users or len(allowed_users) == 0)
                             and int(k.strip()) != int(event.chat_id)):
                         file = await bot.download_media(event.message.media, file=bytes)
                         event.message.message = event.message.message.replace(first_word, '', 1)
@@ -59,7 +55,7 @@ class MessageForwarder:
             tag_groups = await sync_to_async(list)(TagGroups.objects.all().filter(tag=event.text))
             for i in tag_groups:
                 logger.info(f"tagging {i.tag} with {i.usernames}")
-                usernames = i.usernames.split(',')
+                usernames = i.usernames
                 usernames = [user.strip() for user in usernames]
                 output = ""
                 for k in usernames:
@@ -77,13 +73,19 @@ class MessageForwarder:
             for i in forwardings:
                 logger.info(f"forwarded {i.from_chat} to {i.to_chats}")
                 await bot.send_message(event.chat_id, 'Booked!')
-                to_chats = i.to_chats.split(',')
+                to_chats = i.to_chats
                 to_chats = [chat.strip() for chat in to_chats]
                 for i in to_chats:
                     await bot.forward_messages(int(i.strip()), event.id, int(event.chat_id))
 
         async def to_from_forwarding(event):
-            forwardings = await sync_to_async(list)(Forwarding.objects.all().filter(to_chats__contains=event.chat_id))
+            all_forwardings = await sync_to_async(list)(Forwarding.objects.all())
+            forwardings = []
+            for i in all_forwardings:
+                to_chats = i.to_chats
+                to_chats = [chat.strip() for chat in to_chats]
+                if str(event.chat_id) in to_chats:
+                    forwardings.append(i)
             for i in forwardings:
                 logger.info(f"forwarded {i.from_chat} to {i.to_chats}")
                 await bot.send_message(event.chat_id, 'Sending something back!')
