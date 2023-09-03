@@ -43,6 +43,7 @@ class MessageForwarder:
                 to_chats = i.to_chats
                 to_chats = [chat.strip() for chat in to_chats]
                 allowed_users = i.allowed_users
+                allowed_users = [user.strip() for user in allowed_users]
                 for k in to_chats:
                     logger.info(f"trying to forward {i.tag} to {k}, event chatId is {event.chat_id}")
                     if ((str(event.sender_id) in allowed_users or len(allowed_users) == 0)
