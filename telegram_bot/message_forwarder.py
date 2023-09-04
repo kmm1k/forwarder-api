@@ -77,7 +77,7 @@ class MessageForwarder:
                 logger.info(f"forwarded {i.from_chat} to {i.to_chats}")
                 await bot.send_message(event.chat_id, 'Booked!')
                 to_chats = i.to_chats
-                to_chats = [chat.strip() for chat in to_chats]
+                to_chats = [str(chat).strip() for chat in to_chats]
                 for i in to_chats:
                     await bot.forward_messages(int(i.strip()), event.id, int(event.chat_id))
 
@@ -86,7 +86,7 @@ class MessageForwarder:
             forwardings = []
             for i in all_forwardings:
                 to_chats = i.to_chats
-                to_chats = [chat.strip() for chat in to_chats]
+                to_chats = [str(chat).strip() for chat in to_chats]
                 if str(event.chat_id) in to_chats:
                     forwardings.append(i)
             for i in forwardings:

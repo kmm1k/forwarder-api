@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from telethon import TelegramClient, events
 
 from telegram_bot.message_forwarder import MessageForwarder
 
