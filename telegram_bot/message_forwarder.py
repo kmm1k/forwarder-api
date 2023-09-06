@@ -29,10 +29,16 @@ class MessageForwarder:
 
         at_bot_pattern = f'(?i)@{self.bot_name}.+'
         at_tag_pattern = f'(?i)@.+'
+        at_tag_grouper_pattern = f'(?i).*@\w+( |$)'
+
+        @bot.on(events.NewMessage(pattern=at_tag_grouper_pattern))
+        async def handler(event: NewMessage.Event):
+            # logger.info("tag grouper", event.message.message)
+            await tag_grouper(event)
 
         @bot.on(events.NewMessage(pattern=at_tag_pattern))
         async def handler(event: NewMessage.Event):
-            await tag_grouper(event)
+            # logger.info("tag grouper", event.message.message)
             await tag_forwarding(event)
 
         async def tag_forwarding(event):
@@ -51,7 +57,10 @@ class MessageForwarder:
                         await bot.send_message(int(k.strip()), event.message.message, file=file)
 
         async def tag_grouper(event):
-            tag_groups = await sync_to_async(list)(TagGroups.objects.all().filter(tag=event.text))
+            tag_groups = await sync_to_async(list)(TagGroups.objects.all())
+            # see if any tag is in the message
+            # and filter out the tags_groups that are in the message
+            tag_groups = [i for i in tag_groups if i.tag in event.message.message]
             for i in tag_groups:
                 usernames = i.usernames
                 usernames = [user.strip() for user in usernames]
