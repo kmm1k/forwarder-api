@@ -81,6 +81,8 @@ class MessageForwarder:
                 to_chats = i.to_chats
                 to_chats = [str(chat).strip() for chat in to_chats]
                 for i in to_chats:
+                    if event.reply_to_msg_id:
+                        await bot.forward_messages(int(i.strip()), event.reply_to_msg_id, int(event.chat_id))
                     await bot.forward_messages(int(i.strip()), event.id, int(event.chat_id))
 
         async def to_from_forwarding(event):
@@ -92,8 +94,10 @@ class MessageForwarder:
                 if str(event.chat_id) in to_chats:
                     forwardings.append(i)
             for i in forwardings:
-                await bot.send_message(event.chat_id, 'Message sent back')
+                if event.reply_to_msg_id:
+                    await bot.forward_messages(int(i.from_chat.strip()), event.reply_to_msg_id, event.chat_id)
                 await bot.forward_messages(int(i.from_chat.strip()), event.id, event.chat_id)
+                await bot.send_message(event.chat_id, 'Message sent back')
 
         await bot.run_until_disconnected()
 
