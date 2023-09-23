@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group, User
 from rest_framework import serializers
-from bot.models import Forwarding, TagGroups, TagForwarding
+from bot.models import Forwarding, TagGroups, TagForwarding, ChatsWithBot
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -38,3 +38,9 @@ class TagForwardingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = TagForwarding
         fields = ['id', 'tag', 'to_chats', 'allowed_users']
+
+
+class ChatsWithBotSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ChatsWithBot
+        fields = ['id', 'chat_id', 'name']

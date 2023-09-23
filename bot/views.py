@@ -6,9 +6,9 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 
-from bot.models import Forwarding, TagGroups, TagForwarding
+from bot.models import Forwarding, TagGroups, TagForwarding, ChatsWithBot
 from bot.serializers import GroupSerializer, UserSerializer, ForwardingSerializer, TagGroupSerializer, \
-    TagForwardingSerializer
+    TagForwardingSerializer, ChatsWithBotSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -31,7 +31,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 class ForwardingViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows ForwardingViewSets to be viewed or edited.
     """
     queryset = Forwarding.objects.all()
     serializer_class = ForwardingSerializer
@@ -41,7 +41,7 @@ class ForwardingViewSet(viewsets.ModelViewSet):
 
 class TagGroupViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows TagGroupViewSets to be viewed or edited.
     """
     queryset = TagGroups.objects.all()
     serializer_class = TagGroupSerializer
@@ -51,7 +51,7 @@ class TagGroupViewSet(viewsets.ModelViewSet):
 
 class TagForwardingViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows groups to be viewed or edited.
+    API endpoint that allows TagForwardingViewSets to be viewed or edited.
     """
     queryset = TagForwarding.objects.all()
     serializer_class = TagForwardingSerializer
@@ -81,3 +81,13 @@ class LogoutView(APIView):
         # simply delete the token to force a login
         request.auth.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class ChatsWithBotViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows ChatsWithBots to be viewed or edited.
+    """
+    queryset = ChatsWithBot.objects.all()
+    serializer_class = ChatsWithBotSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]

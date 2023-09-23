@@ -31,3 +31,13 @@ class TagForwarding(models.Model):
     class Meta:
         ordering = ['created']
         app_label = ('bot')
+
+
+class ChatsWithBot(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    chat_id = models.CharField(max_length=1000, blank=False, unique=True)
+    name = models.CharField(max_length=1000, blank=False)
+
+    class Meta:
+        ordering = ['created']
+        app_label = ('bot')

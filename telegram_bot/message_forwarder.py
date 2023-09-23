@@ -19,6 +19,7 @@ class MessageForwarder:
         from bot.models import Forwarding
         from bot.models import TagGroups
         from bot.models import TagForwarding
+        from bot.models import ChatsWithBot
 
         self.bot_name = config["bot_name"]
         bot = TelegramClient(config["bot_name"],
@@ -31,14 +32,29 @@ class MessageForwarder:
         at_tag_pattern = f'(?i)@.+'
         at_tag_grouper_pattern = f'(?i).*@\w+( |$)'
 
+        @bot.on(events.ChatAction())
+        async def handler(event):
+            # Check if the bot has been added to the chat
+            added = event.user_added or event.created or event.user_joined
+            me = await bot.get_me()
+            if added and event.user_id == me.id:
+                await create_chat_record(event.chat_id, event.chat.title)
+
+        @sync_to_async
+        def create_chat_record(chat_id, title):
+            try:
+                ChatsWithBot.objects.create(chat_id=chat_id, name=title)
+            except Exception as e:
+                if 'UNIQUE constraint failed' in str(e):
+                    pass
+                logger.info(e)
+
         @bot.on(events.NewMessage(pattern=at_tag_grouper_pattern))
         async def handler(event: NewMessage.Event):
-            # logger.info("tag grouper", event.message.message)
             await tag_grouper(event)
 
         @bot.on(events.NewMessage(pattern=at_tag_pattern))
         async def handler(event: NewMessage.Event):
-            # logger.info("tag grouper", event.message.message)
             await tag_forwarding(event)
 
         async def tag_forwarding(event):

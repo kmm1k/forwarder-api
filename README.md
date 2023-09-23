@@ -47,9 +47,16 @@ server {
 4) install docker on server `sudo apt install docker.io`
 5) `docker run --name mynginx1 -p 80:80 -v $(pwd)/my_nginx.conf:/etc/nginx/conf.d/default.conf -d nginx`
 
+NOTE: right now the nginx is running in docker container with ssl config and let's encrypt certificate 
+and you need to do this for CORS and other errors, also it's safer
+
 **How to deploy Telegram bot:**
 
 1) ssh to the server
 2) cd to the project folder
 3) create config.yml file using sample_config.yml
 4) `screen -dmS forwarder_bot python manage.py run_telethon`
+
+**DO NOT FORGET when deploying:**
+1) change SECRET_KEY in settings.py for Django
+2) set CORS_ORIGIN_WHITELIST in settings.py for Django the url where the requests are coming from
