@@ -1,4 +1,4 @@
-**How to dev locally:**
+# How to dev locally:
 1) `python3 -m venv env` or `python -m venv env`
 2) source env/bin/activate  # On Windows use `env\Scripts\activate`
 3) `pip install -r requirements.txt`
@@ -6,7 +6,7 @@
 5) python manage.py runserver
 
 
-**How to deploy Django:**
+# How to deploy Django:
 
 first make sure that settings.py has `DEBUG = False` and `ALLOWED_HOSTS = ['*']`
 1) ssh to the server
@@ -27,7 +27,7 @@ first make sure that settings.py has `DEBUG = False` and `ALLOWED_HOSTS = ['*']`
 11) `screen -dmS forwarder_api python manage.py runserver 0.0.0.0:8000`
 
 
-**How to deploy Nginx:**
+# How to deploy Nginx:
 
 1) create folder nginx in root
 2) create file nginx.conf in folder nginx
@@ -50,7 +50,7 @@ server {
 NOTE: right now the nginx is running in docker container with ssl config and let's encrypt certificate 
 and you need to do this for CORS and other errors, also it's safer
 
-**How to deploy Telegram bot:**
+# How to deploy Telegram bot:
 
 1) ssh to the server
 2) cd to the project folder
@@ -60,3 +60,24 @@ and you need to do this for CORS and other errors, also it's safer
 **DO NOT FORGET when deploying:**
 1) change SECRET_KEY in settings.py for Django
 2) set CORS_ORIGIN_WHITELIST in settings.py for Django the url where the requests are coming from
+
+
+# Flow for updates
+
+**Front-end**
+1) build front-end with .env file having url of the api
+2) deploy to s3 bucket
+3) invalidate cache in cloudfront
+
+**Back-end**
+1) cd forwarder-api/
+2) source myenv/bin/activate
+3) git pull
+4) python manage.py migrate (optional)
+5) screen -ls
+6) screen kill forwarder_botPID
+7) screen -dmS forwarder_bot python manage.py run_telethon
+8) screen kill forwarder_apiPID
+9) screen -dmS forwarder_api python manage.py runserver 0.0.0.0:8000
+10) test the bot
+11) test the api
