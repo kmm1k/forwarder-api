@@ -99,9 +99,13 @@ class TestScraper(unittest.TestCase):
 
         # Setting up the initial state: Given there are some bets in the bets_dict from previous runs
         url = "https://sample.url"
+
+        bet = {'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
+               'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA'}
+        bet_hash = str(hash(frozenset(bet.items())))
+
         self.scraper.bets_dict[url] = {
-            'bet1': {'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
-                     'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA'},
+            bet_hash: bet,
         }
 
         # The new data: When calling get_new_bets with new bets

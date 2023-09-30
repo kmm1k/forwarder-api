@@ -98,7 +98,8 @@ class Scraper:
 
         parsed_bets = {}
         for item in data:
-            parsed_bets[item['pin_fix']] = item
+            item_hash = str(hash(frozenset(item.items())))
+            parsed_bets[item_hash] = item
 
         if url not in self.bets_dict:
             self.bets_dict[url] = parsed_bets
