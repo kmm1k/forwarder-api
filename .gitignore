@@ -58,3 +58,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# creds.yml for bet site integration
+integrations/creds.yml
