@@ -38,6 +38,18 @@ class TestPrintModel(unittest.TestCase):
         print(expected_output)
         self.assertEqual(model.get_markdown(), expected_output)
 
+    def test_get_markdown_sus1x2_case_home(self):
+        model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", 1, 0, 2.9, "1x2")
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- HomeTeam \\-0\\.5 @ 2\\.9\n"
+        print(expected_output)
+        self.assertEqual(model.get_markdown(), expected_output)
+
+    def test_get_markdown_sus1x2_case_away(self):
+        model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", 2, 0, 2.9, "1x2")
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.9\n"
+        print(expected_output)
+        self.assertEqual(model.get_markdown(), expected_output)
+
     def test_get_markdown_for_ou_with_text(self):
         model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "U", 10.5, 2.0, "corners_ou")
         expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Under 10\\.5 Corners @ 2\\.0\n"

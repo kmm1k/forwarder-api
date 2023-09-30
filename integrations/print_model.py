@@ -50,12 +50,12 @@ class PrintModel:
                 self.bet_type = "Under"
 
         if "1x2" in str.lower(bet_class):
-            if bet_type == "1":
+            if str(bet_type) == "1":
                 self.mod = -0.5
-            if bet_type == "2":
+            if str(bet_type) == "2":
                 self.mod = -0.5
                 self.display_team = away_team
-            if str.lower(bet_type) == "x":
+            if str.lower(str(bet_type)) == "x":
                 self.mod = 0
                 self.display_team = "Draw"
 
@@ -71,7 +71,7 @@ class PrintModel:
 
     def display_mod(self):
         if "1x2" in str.lower(self.bet_class):
-            if str.lower(self.bet_type) == "x":
+            if str.lower(str(self.bet_type)) == "x":
                 return ""
         if "corners_ou" in str.lower(self.bet_class):
             return str(self.mod) + " Corners "
