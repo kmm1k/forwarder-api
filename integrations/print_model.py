@@ -73,6 +73,8 @@ class PrintModel:
         if "1x2" in str.lower(self.bet_class):
             if str.lower(self.bet_type) == "x":
                 return ""
+        if "corners_ou" in str.lower(self.bet_class):
+            return str(self.mod) + " Corners "
         return str(self.mod)+" "
 
     def what_to_display(self):

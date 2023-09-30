@@ -4,3 +4,4 @@ django-cors-headers
 drf_yasg
 telethon
 pyyaml
+requests

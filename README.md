@@ -78,6 +78,8 @@ and you need to do this for CORS and other errors, also it's safer
 6) screen kill forwarder_botPID
 7) screen -dmS forwarder_bot python manage.py run_telethon
 8) screen kill forwarder_apiPID
-9) screen -dmS forwarder_api python manage.py runserver 0.0.0.0:8000
-10) test the bot
-11) test the api
+9) screen -dmS forwarder_api python manage.py runserver 0.0.0.0:8000 
+10) screen kill forwarder_scraperPID
+11) screen -dmS forwarder_scraper python manage.py run_scraper
+12) test the bot
+13) test the api
