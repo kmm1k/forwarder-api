@@ -37,7 +37,7 @@ class PrintModel:
                f" \\- {escape(self.what_to_display())} {escape(self.get_sign())}{escape(self.display_mod())}@ {escape(self.price)}\n"
 
     def remodel_based_on_bet_data(self, bet_class, bet_type, mod, away_team):
-        if "ah" in str.lower(bet_class) and bet_type == "2":
+        if "ah" in str.lower(bet_class) and str(bet_type) == "2":
             self.mod = mod * -1
             self.display_team = away_team
 
@@ -75,7 +75,7 @@ class PrintModel:
                 return ""
         if "corners_ou" in str.lower(self.bet_class):
             return str(self.mod) + " Corners "
-        return str(self.mod)+" "
+        return str(self.mod) + " "
 
     def what_to_display(self):
         if "ou" in str.lower(self.bet_class):
