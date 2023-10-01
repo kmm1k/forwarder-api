@@ -7,6 +7,7 @@ import yaml
 
 from integrations.client.bet_site import BetSite
 from integrations.print_model import PrintModel
+from integrations.tests.helpers.hash_calculator import compute_bet_model_hash
 
 loggingFormat = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(level=logging.INFO, format=loggingFormat)
@@ -98,7 +99,7 @@ class Scraper:
 
         parsed_bets = {}
         for item in data:
-            item_hash = str(hash(frozenset(item.items())))
+            item_hash = compute_bet_model_hash(item)
             parsed_bets[item_hash] = item
 
         if url not in self.bets_dict:

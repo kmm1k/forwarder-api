@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock
 
 from integrations.client.bet_site import BetSite
 from integrations.scraper import Scraper
+from integrations.tests.helpers.hash_calculator import compute_bet_model_hash
 
 
 class TestScraper(unittest.TestCase):
@@ -101,8 +102,8 @@ class TestScraper(unittest.TestCase):
         url = "https://sample.url"
 
         bet = {'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
-               'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA'}
-        bet_hash = str(hash(frozenset(bet.items())))
+               'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA', 'placed_count': 0}
+        bet_hash = compute_bet_model_hash(bet)
 
         self.scraper.bets_dict[url] = {
             bet_hash: bet,
@@ -110,8 +111,8 @@ class TestScraper(unittest.TestCase):
 
         # The new data: When calling get_new_bets with new bets
         data = json.dumps([
-            {'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
-             'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA'},
+            {'pin_fix': 'bet1', 'hours_to_start': 0.5, 'league': 'LeagueA', 'home_team': 'TeamA',
+             'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA', 'placed_count': 1},
             {'pin_fix': 'bet2', 'hours_to_start': 2, 'league': 'LeagueB', 'home_team': 'TeamC',
              'away_team': 'TeamD', 'bet_type': '2', 'mod': 1, 'price': 1.5, 'bet_class': 'classB'},
         ])
