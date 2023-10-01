@@ -14,7 +14,7 @@ def hours_and_minutes(number):
 
 
 class PrintModel:
-    def __init__(self, page_name, hours_to_start, league, home_team, away_team, bet_type, mod, price, bet_class):
+    def __init__(self, page_name, hours_to_start, league, home_team, away_team, bet_type, mod, price, bet_class, placed_count):
         self.page_name = page_name
         self.hours_to_start = hours_to_start
         self.league = league
@@ -25,12 +25,14 @@ class PrintModel:
         self.mod = mod
         self.price = price
         self.bet_class = bet_class
+        self.placed_count = placed_count
 
         self.remodel_based_on_bet_data(bet_class, bet_type, mod, away_team)
 
     def get_markdown(self):
         formatted_time = hours_and_minutes(self.hours_to_start)
-        return f"__{escape(self.page_name)}__\n\n" \
+        return f"__{escape(self.page_name)}__\n" \
+               f"{self.get_placed_text()}" \
                f"_\\({escape(formatted_time)}\\)_\n" \
                f"*{escape(self.league)}*\n" \
                f"{escape(self.home_team)} / {escape(self.away_team)}" \
@@ -81,3 +83,8 @@ class PrintModel:
         if "ou" in str.lower(self.bet_class):
             return self.bet_type
         return self.display_team
+
+    def get_placed_text(self):
+        if self.placed_count == 0:
+            return "\n"
+        return "_Already placed before_\n\n"

@@ -125,7 +125,8 @@ class Scraper:
                 bet_type=bet['bet_type'],
                 mod=bet['mod'],
                 price=bet['price'],
-                bet_class=bet['bet_class']
+                bet_class=bet['bet_class'],
+                placed_count=bet['placed_count']
             )
             formatted_bets.append(model.get_markdown())
         return formatted_bets
