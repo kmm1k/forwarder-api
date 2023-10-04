@@ -101,7 +101,7 @@ class TestScraper(unittest.TestCase):
         # Setting up the initial state: Given there are some bets in the bets_dict from previous runs
         url = "https://sample.url"
 
-        bet = {'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
+        bet = {'uuid': 'aaa', 'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
                'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA', 'placed_count': 0}
         bet_hash = compute_bet_model_hash(bet)
 
@@ -111,13 +111,93 @@ class TestScraper(unittest.TestCase):
 
         # The new data: When calling get_new_bets with new bets
         data = json.dumps([
-            {'pin_fix': 'bet1', 'hours_to_start': 0.5, 'league': 'LeagueA', 'home_team': 'TeamA',
+            {'uuid': 'aaa', 'pin_fix': 'bet1', 'hours_to_start': 0.5, 'league': 'LeagueA', 'home_team': 'TeamA',
              'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA', 'placed_count': 1},
-            {'pin_fix': 'bet2', 'hours_to_start': 2, 'league': 'LeagueB', 'home_team': 'TeamC',
-             'away_team': 'TeamD', 'bet_type': '2', 'mod': 1, 'price': 1.5, 'bet_class': 'classB'},
+            {'uuid': 'bbb', 'pin_fix': 'bet2', 'hours_to_start': 2, 'league': 'LeagueB', 'home_team': 'TeamC',
+             'away_team': 'TeamD', 'bet_type': '2', 'mod': 1, 'price': 1.5, 'bet_class': 'classB', 'placed_count': 0},
         ])
 
         new_bets = self.scraper.get_new_bets(url, data)
+
+        # Then it should return only the new bets
+        self.assertEqual(len(new_bets), 1)
+        self.assertEqual(new_bets[0]['pin_fix'], 'bet2')
+
+    def test_get_new_bets_price_changes(self):
+        # given there are some bets in the bets_dict from previous runs
+        # when calling get_new_bets with new bets
+        # then it should return only the new bets
+
+        # Setting up the initial state: Given there are some bets in the bets_dict from previous runs
+        url = "https://sample.url"
+
+        bet = {'uuid': 'aaa', 'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
+               'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA', 'placed_count': 0}
+        bet_hash = compute_bet_model_hash(bet)
+
+        self.scraper.bets_dict[url] = {
+            bet_hash: bet,
+        }
+
+        # The new data: When calling get_new_bets with new bets
+        data = json.dumps([
+            {'uuid': 'aaa', 'pin_fix': 'bet1', 'hours_to_start': 0.5, 'league': 'LeagueA', 'home_team': 'TeamA',
+             'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 3.0, 'bet_class': 'classA', 'placed_count': 1},
+            {'uuid': 'bbb', 'pin_fix': 'bet2', 'hours_to_start': 2, 'league': 'LeagueB', 'home_team': 'TeamC',
+             'away_team': 'TeamD', 'bet_type': '2', 'mod': 1, 'price': 1.5, 'bet_class': 'classB', 'placed_count': 0},
+        ])
+
+        new_bets = self.scraper.get_new_bets(url, data)
+
+        # Then it should return only the new bets
+        self.assertEqual(len(new_bets), 2)
+        self.assertEqual(self.scraper.placed_bets['aaa']['price'], 3.0)
+
+    def test_placed_bets(self):
+        url = "https://sample.url"
+
+        old_data = json.dumps(
+            [{'uuid': 'aaa', 'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
+              'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA', 'placed_count': 1}])
+        old_bets = self.scraper.get_new_bets(url, old_data)
+
+        data = json.dumps([
+            {'uuid': 'aaa', 'pin_fix': 'bet1', 'hours_to_start': 0.5, 'league': 'LeagueA', 'home_team': 'TeamA',
+             'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 3.0, 'bet_class': 'classA', 'placed_count': 1},
+            {'uuid': 'bbb', 'pin_fix': 'bet2', 'hours_to_start': 2, 'league': 'LeagueB', 'home_team': 'TeamC',
+             'away_team': 'TeamD', 'bet_type': '2', 'mod': 1, 'price': 1.5, 'bet_class': 'classB', 'placed_count': 0},
+        ])
+
+        new_bets = self.scraper.get_new_bets(url, data)
+
+        self.assertEqual(len(new_bets), 2)
+        self.assertEqual(self.scraper.placed_bets['aaa']['price'], 2.0)
+        self.assertEqual(len(self.scraper.placed_bets), 1)
+
+    def test_get_new_bets_for_special(self):
+        # given there are some bets in the bets_dict from previous runs
+        # when calling get_new_bets with new bets
+        # then it should return only the new bets
+
+        # Setting up the initial state: Given there are some bets in the bets_dict from previous runs
+        url = "https://sample.url"
+
+        bet = {'uuid': 'aaa', 'pin_fix': 'bet1', 'hours_to_start': 1, 'league': 'LeagueA', 'home_team': 'TeamA',
+               'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA', 'placed_count': 0}
+
+        self.scraper.bets_dict[url] = {
+            bet['uuid']: bet,
+        }
+
+        # The new data: When calling get_new_bets with new bets
+        data = json.dumps([
+            {'uuid': 'aaa', 'pin_fix': 'bet1', 'hours_to_start': 0.5, 'league': 'LeagueA', 'home_team': 'TeamA',
+             'away_team': 'TeamB', 'bet_type': '1', 'mod': 0, 'price': 2.0, 'bet_class': 'classA', 'placed_count': 1},
+            {'uuid': 'bbb', 'pin_fix': 'bet2', 'hours_to_start': 2, 'league': 'LeagueB', 'home_team': 'TeamC',
+             'away_team': 'TeamD', 'bet_type': '2', 'mod': 1, 'price': 1.5, 'bet_class': 'classB', 'placed_count': 0},
+        ])
+
+        new_bets = self.scraper.get_new_bets_based_on_uuid(url, data)
 
         # Then it should return only the new bets
         self.assertEqual(len(new_bets), 1)
@@ -171,6 +251,24 @@ class TestScraper(unittest.TestCase):
         # Check if the methods have been called
         scraper.get_and_parse_data.assert_called_once()
         scraper.send_data_to_bot.assert_called_once()
+
+    def test_add_new_bet_to_placed_bets(self):
+        bet = {'uuid': '12345', 'placed_count': 1}
+        self.scraper.check_bet_for_placed_and_add_to_dict(bet)
+        self.assertIn('12345', self.scraper.placed_bets)  # Bet should be added
+
+    def test_do_not_add_bet_with_zero_placed_count(self):
+        bet = {'uuid': '67890', 'placed_count': 0}
+        self.scraper.check_bet_for_placed_and_add_to_dict(bet)
+        self.assertNotIn('67890', self.scraper.placed_bets)  # Bet shouldn't be added
+
+    def test_do_not_add_existing_bet(self):
+        bet = {'uuid': '54321', 'placed_count': 1}
+        self.scraper.placed_bets['54321'] = bet  # Add the bet to placed_bets before calling the function
+
+        # Call the function to see if it re-adds the bet
+        self.scraper.check_bet_for_placed_and_add_to_dict(bet)
+        self.assertIn('54321', self.scraper.placed_bets)
 
 
 if __name__ == '__main__':

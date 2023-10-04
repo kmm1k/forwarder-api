@@ -22,6 +22,7 @@ class Scraper:
         self.bets_dict = {}
         # has to be a dict, because we have 2 urls and data sources
         self.last_updated = {}
+        self.placed_bets = {}
 
     def start(self):
         with open('./integrations/creds.yml', 'rb') as f:
@@ -63,6 +64,10 @@ class Scraper:
         bet365_message_queue = self.process_new_bets(new_bets, "Bet365")
         message_queues["bet365"] = bet365_message_queue
 
+        bet365_clean_new_bets = self.get_new_bets_based_on_uuid("bet365_clean", bet365_data['data'])
+        bet365_message_queue = self.process_new_bets(bet365_clean_new_bets, "Bet365")
+        message_queues["bet365_clean"] = bet365_message_queue
+
         return message_queues
 
     async def send_data_to_bot(self, message_queues, config):
@@ -93,6 +98,23 @@ class Scraper:
                 response = requests.post(telegram_url, data=payload)
                 logger.info(response.text)
 
+        if "bet365_clean" in message_queues:
+            message_queue = message_queues["bet365_clean"]
+            for message in message_queue:
+                payload = {
+                    'chat_id': config['chat_bet365_clean_id'],
+                    'text': message,
+                    'parse_mode': 'MarkdownV2'
+                }
+                response = requests.post(telegram_url, data=payload)
+                logger.info(response.text)
+
+    def check_bet_for_placed_and_add_to_dict(self, bet):
+        if bet['placed_count'] > 0:
+            if bet['uuid'] not in self.placed_bets:
+                self.placed_bets[bet['uuid']] = bet
+                logger.info(f"Placed bet: {bet['uuid']}")
+
     def get_new_bets(self, url, data):
         new_bets = []
         data = json.loads(data)
@@ -101,6 +123,26 @@ class Scraper:
         for item in data:
             item_hash = compute_bet_model_hash(item)
             parsed_bets[item_hash] = item
+            self.check_bet_for_placed_and_add_to_dict(item)
+
+        if url not in self.bets_dict:
+            self.bets_dict[url] = parsed_bets
+        else:
+            old_parsed_bets = self.bets_dict[url]
+            for key, value in parsed_bets.items():
+                if key not in old_parsed_bets:
+                    new_bets.append(value)
+
+        self.bets_dict[url] = parsed_bets
+        return new_bets
+
+    def get_new_bets_based_on_uuid(self, url, data):
+        new_bets = []
+        data = json.loads(data)
+
+        parsed_bets = {}
+        for item in data:
+            parsed_bets[item['uuid']] = item
 
         if url not in self.bets_dict:
             self.bets_dict[url] = parsed_bets
@@ -126,7 +168,13 @@ class Scraper:
                 mod=bet['mod'],
                 price=bet['price'],
                 bet_class=bet['bet_class'],
-                placed_count=bet['placed_count']
+                placed_count=bet['placed_count'],
+                placed_price=self.get_placed_price(bet['uuid'])
             )
             formatted_bets.append(model.get_markdown())
         return formatted_bets
+
+    def get_placed_price(self, uuid):
+        if uuid in self.placed_bets:
+            return str(self.placed_bets[uuid]['price'])
+        return "Not placed yet"

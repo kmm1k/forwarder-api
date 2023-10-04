@@ -71,8 +71,8 @@ class TestPrintModel(unittest.TestCase):
         self.assertEqual(model.get_markdown(), expected_output)
 
     def test_get_markdown_another_ou_testcase_already_placed(self):
-        model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "U", 4.0, 1.85, "ou", 1)
-        expected_output = "__TestPage__\n_Already placed before_\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Under 4 @ 1\\.85\n"
+        model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "U", 4.0, 1.85, "ou", 1, 0.5)
+        expected_output = "__TestPage__\n_Already placed before @ 0\\.5_\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Under 4 @ 1\\.85\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
 

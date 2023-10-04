@@ -14,7 +14,8 @@ def hours_and_minutes(number):
 
 
 class PrintModel:
-    def __init__(self, page_name, hours_to_start, league, home_team, away_team, bet_type, mod, price, bet_class, placed_count):
+    def __init__(self, page_name, hours_to_start, league, home_team, away_team, bet_type, mod, price, bet_class,
+                 placed_count, placed_price="NaN"):
         self.page_name = page_name
         self.hours_to_start = hours_to_start
         self.league = league
@@ -26,6 +27,7 @@ class PrintModel:
         self.price = price
         self.bet_class = bet_class
         self.placed_count = placed_count
+        self.placed_price = placed_price
 
         self.remodel_based_on_bet_data(bet_class, bet_type, mod, away_team)
 
@@ -87,4 +89,4 @@ class PrintModel:
     def get_placed_text(self):
         if self.placed_count == 0:
             return "\n"
-        return "_Already placed before_\n\n"
+        return f"_Already placed before @ {escape(self.placed_price)}_\n\n"
