@@ -65,7 +65,7 @@ class Scraper:
         message_queues["bet365"] = bet365_message_queue
 
         bet365_clean_new_bets = self.get_new_bets_based_on_uuid("bet365_clean", bet365_data['data'])
-        bet365_message_queue = self.process_new_bets(bet365_clean_new_bets, "Bet365")
+        bet365_message_queue = self.process_new_bets_clean(bet365_clean_new_bets, "Bet365")
         message_queues["bet365_clean"] = bet365_message_queue
 
         return message_queues
@@ -170,6 +170,25 @@ class Scraper:
                 bet_class=bet['bet_class'],
                 placed_count=bet['placed_count'],
                 placed_price=self.get_placed_price(bet['uuid'])
+            )
+            formatted_bets.append(model.get_markdown())
+        return formatted_bets
+
+    def process_new_bets_clean(self, new_bets, page_name):
+        formatted_bets = []
+        for bet in new_bets:
+            model = PrintModel(
+                page_name=page_name,
+                hours_to_start=bet['hours_to_start'],
+                league=bet['league'],
+                home_team=bet['home_team'],
+                away_team=bet['away_team'],
+                bet_type=bet['bet_type'],
+                mod=bet['mod'],
+                price=bet['price'],
+                bet_class=bet['bet_class'],
+                placed_count=0,
+                placed_price="No Price"
             )
             formatted_bets.append(model.get_markdown())
         return formatted_bets
