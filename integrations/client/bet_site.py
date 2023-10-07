@@ -40,7 +40,7 @@ class BetSite:
         MAX_RETRIES = 3
         RETRY_DELAY = 5  # delay between retries, in seconds
 
-        logger.info(f"BetSite get_bets_data from url {url}")
+        # logger.info(f"BetSite get_bets_data from url {url}")
 
         for attempt in range(MAX_RETRIES):
             try:

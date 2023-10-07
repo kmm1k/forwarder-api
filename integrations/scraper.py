@@ -52,14 +52,14 @@ class Scraper:
 
         chat_sing_api_url = config['sing_api_url']
         sing_data = self.betsSite.get_bets_data(chat_sing_api_url)
-        logger.info(f"sing elements in list: {len(json.loads(sing_data['data']))}")
+        # logger.info(f"sing elements in list: {len(json.loads(sing_data['data']))}")
         new_bets = self.get_new_bets(chat_sing_api_url, sing_data['data'])
         sing_message_queue = self.process_new_bets(new_bets, "Sing")
         message_queues["sing"] = sing_message_queue
 
         chat_bet365_api_url = config['bet365_api_url']
         bet365_data = self.betsSite.get_bets_data(chat_bet365_api_url)
-        logger.info(f"bet365 elements in list: {len(json.loads(bet365_data['data']))}")
+        # logger.info(f"bet365 elements in list: {len(json.loads(bet365_data['data']))}")
         new_bets = self.get_new_bets(chat_bet365_api_url, bet365_data['data'])
         bet365_message_queue = self.process_new_bets(new_bets, "Bet365")
         message_queues["bet365"] = bet365_message_queue
@@ -85,7 +85,7 @@ class Scraper:
                     'parse_mode': 'MarkdownV2'
                 }
                 response = requests.post(telegram_url, data=payload)
-                logger.info(response.text)
+                # logger.info(response.text)
 
         if "bet365" in message_queues:
             message_queue = message_queues["bet365"]
@@ -96,7 +96,7 @@ class Scraper:
                     'parse_mode': 'MarkdownV2'
                 }
                 response = requests.post(telegram_url, data=payload)
-                logger.info(response.text)
+                # logger.info(response.text)
 
         if "bet365_clean" in message_queues:
             message_queue = message_queues["bet365_clean"]
@@ -107,13 +107,13 @@ class Scraper:
                     'parse_mode': 'MarkdownV2'
                 }
                 response = requests.post(telegram_url, data=payload)
-                logger.info(response.text)
+                # logger.info(response.text)
 
     def check_bet_for_placed_and_add_to_dict(self, bet):
         if bet['placed_count'] > 0:
             if bet['uuid'] not in self.placed_bets:
                 self.placed_bets[bet['uuid']] = bet
-                logger.info(f"Placed bet: {bet['uuid']}")
+                # logger.info(f"Placed bet: {bet['uuid']}")
 
     def get_new_bets(self, url, data):
         new_bets = []
