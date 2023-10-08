@@ -53,11 +53,11 @@ class PrintModel:
             if str.lower(bet_type) == "u":
                 self.bet_type = "Under"
 
-        if "1x2" in str.lower(bet_class):
-            if str(bet_type) == "1":
-                self.mod = -0.5
+        if "1x2" in str.lower(bet_class) or "ml" in str.lower(bet_class):
+            self.mod = -0.5
+            if str.lower(str(bet_type)) == "l":
+                self.display_team = away_team
             if str(bet_type) == "2":
-                self.mod = -0.5
                 self.display_team = away_team
             if str.lower(str(bet_type)) == "x":
                 self.mod = 0

@@ -42,6 +42,26 @@ class TestPrintModel(unittest.TestCase):
         expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 1\\.9\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
+    def test_get_markdown_for_1x2_class_away_win_with_some_other_syntax(self):
+        model = PrintModel("TestPage", 1.175, "TestLeague", "HomeTeam", "AwayTeam", 2, None, 2.63, "1x2 ", 0)
+        expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.63\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
+    def test_get_markdown_for_ml_class_away_lose(self):
+        model = PrintModel("TestPage", 1.175, "TestLeague", "HomeTeam", "AwayTeam", "L", None, 2.63, "ml", 0)
+        expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.63\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
+    def test_get_markdown_for_ml_class_away_anything_else(self):
+        model = PrintModel("TestPage", 1.175, "TestLeague", "HomeTeam", "AwayTeam", "d", None, 2.63, "ml", 0)
+        expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- HomeTeam \\-0\\.5 @ 2\\.63\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
+    def test_get_markdown_for_ml_class_draw(self):
+        model = PrintModel("TestPage", 1.175, "TestLeague", "HomeTeam", "AwayTeam", "x", None, 2.63, "ml", 0)
+        expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Draw 0 @ 2\\.63\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
     def test_get_markdown_for_1x2_class_draw(self):
         model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "x", 0, 3.0, "1x2", 0)
         expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Draw @ 3\\.0\n"
