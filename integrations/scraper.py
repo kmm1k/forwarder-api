@@ -7,7 +7,7 @@ import yaml
 
 from integrations.client.bet_site import BetSite
 from integrations.print_model import PrintModel
-from integrations.tests.helpers.hash_calculator import compute_bet_model_hash
+from integrations.helpers.hash_calculator import compute_bet_model_hash
 
 loggingFormat = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(level=logging.INFO, format=loggingFormat)

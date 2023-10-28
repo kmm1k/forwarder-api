@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -135,3 +135,27 @@ REST_FRAMEWORK = {
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:5173',
 ]
+
+LOGGING_DIR = os.path.join(BASE_DIR, 'logs/')
+
+if not os.path.exists(LOGGING_DIR):
+    os.makedirs(LOGGING_DIR)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',  # Change to ERROR once you confirm it works
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGGING_DIR, 'errors.log'),
+        },
+    },
+    'loggers': {
+        '': {  # This empty string catches all errors, not just Django's
+            'handlers': ['file'],
+            'level': 'ERROR',  # Change to ERROR once you confirm it works
+            'propagate': True,
+        },
+    },
+}
