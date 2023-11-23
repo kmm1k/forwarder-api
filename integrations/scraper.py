@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import time
 
 import requests
 import yaml
@@ -23,6 +24,7 @@ class Scraper:
         # has to be a dict, because we have 2 urls and data sources
         self.last_updated = {}
         self.placed_bets = {}
+        self.clean_delay_queue = {}
 
     def start(self):
         with open('./integrations/creds.yml', 'rb') as f:
@@ -72,6 +74,7 @@ class Scraper:
 
     async def send_data_to_bot(self, message_queues, config):
         telegram_url = f"https://api.telegram.org/bot{config['bot_token']}/sendMessage"
+        current_time = time.time()
 
         if not message_queues:
             return
@@ -98,16 +101,23 @@ class Scraper:
                 response = requests.post(telegram_url, data=payload)
                 # logger.info(response.text)
 
+        # Handle 'bet365_clean' queue with a delay
         if "bet365_clean" in message_queues:
-            message_queue = message_queues["bet365_clean"]
-            for message in message_queue:
+            for message in message_queues["bet365_clean"]:
+                # Add each message to the delay queue with its own timestamp
+                self.clean_delay_queue[message] = current_time
+
+        # Check the delay queue and send messages older than 5 minutes
+        for message, message_time in list(self.clean_delay_queue.items()):
+            if current_time - message_time >= 300:  # 5 minutes
                 payload = {
                     'chat_id': config['chat_bet365_clean_id'],
                     'text': message,
                     'parse_mode': 'MarkdownV2'
                 }
                 response = requests.post(telegram_url, data=payload)
-                # logger.info(response.text)
+                # Remove the message from the queue after sending
+                del self.clean_delay_queue[message]
 
     def check_bet_for_placed_and_add_to_dict(self, bet):
         if bet['placed_count'] > 0:
