@@ -41,11 +41,7 @@ class PrintModel:
                f" \\- {escape(self.what_to_display())} {escape(self.get_sign())}{escape(self.display_mod())}@ {escape(self.price)}\n"
 
     def remodel_based_on_bet_data(self, bet_class, bet_type, mod, away_team):
-        if "ah" in str.lower(bet_class) and str(bet_type) == "2":
-            self.mod = mod * -1
-            self.display_team = away_team
-
-        if "asian" in str.lower(bet_class) and str(bet_type) == "2":
+        if str(bet_type) == "2" and "1x2" not in str.lower(bet_class) and "ml" not in str.lower(bet_class):
             self.mod = mod * -1
             self.display_team = away_team
 

@@ -100,6 +100,16 @@ class TestPrintModel(unittest.TestCase):
         expected_output = "__Bet365__\n\n_\\(15h 30min\\)_\n*Erovnuli Liga Georgia*\nFC Telavi / FC Saburtalo Tbilisi \\- FC Saburtalo Tbilisi \\+0\\.25 @ 1\\.83\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
+    def test_get_markdown_random_bet_class_flipper(self):
+        model = PrintModel("Bet365", 15.5, "Erovnuli Liga Georgia", "FC Telavi", "FC Saburtalo Tbilisi", 2, -0.25, 1.83, "randomx2", 0)
+        expected_output = "__Bet365__\n\n_\\(15h 30min\\)_\n*Erovnuli Liga Georgia*\nFC Telavi / FC Saburtalo Tbilisi \\- FC Saburtalo Tbilisi \\+0\\.25 @ 1\\.83\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
+    def test_get_markdown_for_1x2_class_away_win_with_ml(self):
+        model = PrintModel("TestPage", 1.175, "TestLeague", "HomeTeam", "AwayTeam", 2, None, 2.63, "ml", 0)
+        expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.63\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
 
 if __name__ == '__main__':
     unittest.main()
