@@ -95,9 +95,9 @@ class TestPrintModel(unittest.TestCase):
         expected_output = "__TestPage__\n_Already placed before @ 0\\.5_\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Under 4 @ 1\\.85\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
-    def test_get_markdown_another_ou_testcase_already_placed(self):
-        model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "U", 4.0, 1.85, "ou", 0, "No Price")
-        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Under 4 @ 1\\.85\n"
+    def test_get_markdown_asian_bet_class_flipper(self):
+        model = PrintModel("Bet365", 15.5, "Erovnuli Liga Georgia", "FC Telavi", "FC Saburtalo Tbilisi", 2, -0.25, 1.83, "asian", 0)
+        expected_output = "__Bet365__\n\n_\\(15h 30min\\)_\n*Erovnuli Liga Georgia*\nFC Telavi / FC Saburtalo Tbilisi \\- FC Saburtalo Tbilisi \\+0\\.25 @ 1\\.83\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
 

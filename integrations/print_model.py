@@ -45,6 +45,10 @@ class PrintModel:
             self.mod = mod * -1
             self.display_team = away_team
 
+        if "asian" in str.lower(bet_class) and str(bet_type) == "2":
+            self.mod = mod * -1
+            self.display_team = away_team
+
         if "ou" in str.lower(bet_class):
             if mod.is_integer():  # Check if the mod value is a whole number
                 self.mod = format(int(mod), "d")
