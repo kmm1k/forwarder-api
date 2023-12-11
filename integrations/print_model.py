@@ -41,25 +41,27 @@ class PrintModel:
                f" \\- {escape(self.what_to_display())} {escape(self.get_sign())}{escape(self.display_mod())}@ {escape(self.price)}\n"
 
     def remodel_based_on_bet_data(self, bet_class, bet_type, mod, away_team):
-        if str(bet_type) == "2" and "1x2" not in str.lower(bet_class) and "ml" not in str.lower(bet_class):
+        parsed_bet_class = str.lower(bet_class).strip()
+        parsed_bet_type = str.lower(str(bet_type)).strip()
+        if parsed_bet_type == "2" and "1x2" not in parsed_bet_class and "ml" not in parsed_bet_class:
             self.mod = mod * -1
             self.display_team = away_team
 
-        if "ou" in str.lower(bet_class):
+        if "ou" in parsed_bet_class:
             if mod.is_integer():  # Check if the mod value is a whole number
                 self.mod = format(int(mod), "d")
-            if str.lower(bet_type) == "o":
+            if parsed_bet_type == "o":
                 self.bet_type = "Over"
-            if str.lower(bet_type) == "u":
+            if parsed_bet_type == "u":
                 self.bet_type = "Under"
 
-        if "1x2" in str.lower(bet_class) or "ml" in str.lower(bet_class):
+        if "1x2" in parsed_bet_class or "ml" in parsed_bet_class:
             self.mod = -0.5
-            if str.lower(str(bet_type)) == "l":
+            if parsed_bet_type == "l":
                 self.display_team = away_team
-            if str(bet_type) == "2":
+            if parsed_bet_type == "2":
                 self.display_team = away_team
-            if str.lower(str(bet_type)) == "x":
+            if parsed_bet_type == "x":
                 self.mod = 0
                 self.display_team = "Draw"
 

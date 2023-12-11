@@ -110,6 +110,11 @@ class TestPrintModel(unittest.TestCase):
         expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.63\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
+    def test_get_markdown_for_ml_class_draw_spaces(self):
+        model = PrintModel("TestPage", 1.175, "TestLeague", "HomeTeam", "AwayTeam", " x ", None, 2.63, " ml ", 0)
+        expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Draw 0 @ 2\\.63\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
 
 if __name__ == '__main__':
     unittest.main()
