@@ -43,7 +43,7 @@ class PrintModel:
     def remodel_based_on_bet_data(self, bet_class, bet_type, mod, away_team):
         parsed_bet_class = str.lower(bet_class).strip()
         parsed_bet_type = str.lower(str(bet_type)).strip()
-        if parsed_bet_type == "2" and "1x2" not in parsed_bet_class and "ml" not in parsed_bet_class and "asian" not in parsed_bet_class:
+        if parsed_bet_type == "2" and "1x2" not in parsed_bet_class and "ml" not in parsed_bet_class:
             self.mod = mod * -1
             self.display_team = away_team
 
