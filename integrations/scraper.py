@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 class Scraper:
     def __init__(self):
         self.betsSite = BetSite()
+        self.cornersSite = BetSite()
         # we should update this every time we get new data, to prevent memory leaks
         self.bets_dict = {}
         # has to be a dict, because we have 2 urls and data sources
@@ -30,6 +31,7 @@ class Scraper:
         with open('./integrations/creds.yml', 'rb') as f:
             config = yaml.safe_load(f)
         self.login(config)
+        self.login_to_corners(config)
         asyncio.run(self.periodic_task(config))
 
     def login(self, config):
@@ -37,9 +39,18 @@ class Scraper:
         password = config['password']
         login_url = config['login_url']
         if self.betsSite.login(username, password, login_url):
-            logger.info("Logged in successfully!")
+            logger.info("Logged in successfully to main bet site!")
         else:
-            logger.info("Failed to log in.")
+            logger.info("Failed to log in to main bet site.")
+
+    def login_to_corners(self, config):
+        username = config['corners_username']
+        password = config['corners_password']
+        login_url = config['corners_login_url']
+        if self.cornersSite.login(username, password, login_url):
+            logger.info("Logged in successfully to corners bet site!")
+        else:
+            logger.info("Failed to log in to corners bet site.")
 
     async def periodic_task(self, config):
         while True:
@@ -52,6 +63,7 @@ class Scraper:
         # we need to separate those, and send message to the correct chat
         message_queues = {}
 
+        # ORIGINAL SING SITE SCRAPING
         chat_sing_api_url = config['sing_api_url']
         sing_data = self.betsSite.get_bets_data(chat_sing_api_url)
         # logger.info(f"sing elements in list: {len(json.loads(sing_data['data']))}")
@@ -59,6 +71,7 @@ class Scraper:
         sing_message_queue = self.process_new_bets(new_bets, "Sing")
         message_queues["sing"] = sing_message_queue
 
+        # ORIGINAL BET365 SITE SCRAPING
         chat_bet365_api_url = config['bet365_api_url']
         bet365_data = self.betsSite.get_bets_data(chat_bet365_api_url)
         # logger.info(f"bet365 elements in list: {len(json.loads(bet365_data['data']))}")
@@ -66,9 +79,18 @@ class Scraper:
         bet365_message_queue = self.process_new_bets(new_bets, "Bet365")
         message_queues["bet365"] = bet365_message_queue
 
+        # SPECIAL BET365 SITE SCRAPING (5 minute delay)
         bet365_clean_new_bets = self.get_new_bets_based_on_uuid("bet365_clean", bet365_data['data'])
         bet365_message_queue = self.process_new_bets_clean(bet365_clean_new_bets, "Bet365")
         message_queues["bet365_clean"] = bet365_message_queue
+
+        # CORNERS SING SITE SCRAPING
+        corners_sing_api_url = config['corners_sing_api_url']
+        corners_sing_data = self.cornersSite.get_bets_data(corners_sing_api_url)
+        logger.info(f"corners_sing elements in list: {len(json.loads(corners_sing_data['data']))}")
+        new_bets = self.get_new_bets(corners_sing_api_url, corners_sing_data['data'])
+        corners_sing_message_queue = self.process_new_bets(new_bets, "Corners Sing")
+        message_queues["sing"] += corners_sing_message_queue
 
         return message_queues
 
@@ -207,3 +229,4 @@ class Scraper:
         if uuid in self.placed_bets:
             return str(self.placed_bets[uuid]['price'])
         return "Not placed yet"
+
