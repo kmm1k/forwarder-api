@@ -61,7 +61,7 @@ class PrintModel:
                 self.display_team = away_team
             if parsed_bet_type == "2":
                 self.display_team = away_team
-            if parsed_bet_type == "x":
+            if parsed_bet_type == "x" or parsed_bet_type == "d":
                 self.mod = 0
                 self.display_team = "Draw"
 
@@ -83,7 +83,7 @@ class PrintModel:
     def display_mod(self):
         parsed_bet_class = str.lower(self.bet_class).strip()
         if "1x2" in parsed_bet_class:
-            if str.lower(str(self.bet_type)) == "x":
+            if str.lower(str(self.bet_type)) == "x" or str.lower(str(self.bet_type)) == "d":
                 return ""
         if "corners_ou" in parsed_bet_class or "overunder_corners" in parsed_bet_class:
             return str(self.mod) + " Corners "
