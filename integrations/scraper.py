@@ -85,12 +85,12 @@ class Scraper:
         message_queues["bet365_clean"] = bet365_message_queue
 
         # CORNERS SING SITE SCRAPING
-        corners_sing_api_url = config['corners_sing_api_url']
-        corners_sing_data = self.cornersSite.get_bets_data(corners_sing_api_url)
-        logger.info(f"corners_sing elements in list: {len(json.loads(corners_sing_data['data']))}")
-        new_bets = self.get_new_bets(corners_sing_api_url, corners_sing_data['data'])
-        corners_sing_message_queue = self.process_new_bets(new_bets, "Corners Sing")
-        message_queues["sing"] += corners_sing_message_queue
+        # corners_sing_api_url = config['corners_sing_api_url']
+        # corners_sing_data = self.cornersSite.get_bets_data(corners_sing_api_url)
+        # logger.info(f"corners_sing elements in list: {len(json.loads(corners_sing_data['data']))}")
+        # new_bets = self.get_new_bets(corners_sing_api_url, corners_sing_data['data'])
+        # corners_sing_message_queue = self.process_new_bets(new_bets, "Corners Sing")
+        # message_queues["sing"] += corners_sing_message_queue
 
         return message_queues
 
