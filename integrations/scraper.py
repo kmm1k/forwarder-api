@@ -31,7 +31,9 @@ class Scraper:
         with open('./integrations/creds.yml', 'rb') as f:
             config = yaml.safe_load(f)
         self.login(config)
-        self.login_to_corners(config)
+        corners_enabled = config['corners_enabled']
+        if corners_enabled:
+            self.login_to_corners(config)
         asyncio.run(self.periodic_task(config))
 
     def login(self, config):
@@ -62,6 +64,7 @@ class Scraper:
         # message queue saves messages from both urls,
         # we need to separate those, and send message to the correct chat
         message_queues = {}
+        corners_enabled = config['corners_enabled']
 
         # ORIGINAL SING SITE SCRAPING
         chat_sing_api_url = config['sing_api_url']
@@ -85,12 +88,13 @@ class Scraper:
         message_queues["bet365_clean"] = bet365_message_queue
 
         # CORNERS SING SITE SCRAPING
-        # corners_sing_api_url = config['corners_sing_api_url']
-        # corners_sing_data = self.cornersSite.get_bets_data(corners_sing_api_url)
-        # logger.info(f"corners_sing elements in list: {len(json.loads(corners_sing_data['data']))}")
-        # new_bets = self.get_new_bets(corners_sing_api_url, corners_sing_data['data'])
-        # corners_sing_message_queue = self.process_new_bets(new_bets, "Corners Sing")
-        # message_queues["sing"] += corners_sing_message_queue
+        if corners_enabled:
+            corners_sing_api_url = config['corners_sing_api_url']
+            corners_sing_data = self.cornersSite.get_bets_data(corners_sing_api_url)
+            logger.info(f"corners_sing elements in list: {len(json.loads(corners_sing_data['data']))}")
+            new_bets = self.get_new_bets(corners_sing_api_url, corners_sing_data['data'])
+            corners_sing_message_queue = self.process_new_bets(new_bets, "Corners Sing")
+            message_queues["sing"] += corners_sing_message_queue
 
         return message_queues
 
