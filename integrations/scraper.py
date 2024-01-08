@@ -123,7 +123,7 @@ class Scraper:
 
         # Check the delay queue and send messages older than 5 minutes
         for message, message_time in list(self.clean_delay_queue.items()):
-            if current_time - message_time >= 300:  # 5 minutes
+            if current_time - message_time >= 1:  # 1 seconds
                 payload = {
                     'chat_id': config['chat_bet365_clean_id'],
                     'text': message,
