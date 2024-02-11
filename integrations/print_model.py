@@ -43,20 +43,37 @@ class PrintModel:
     def remodel_based_on_bet_data(self, bet_class, bet_type, mod, away_team):
         parsed_bet_class = str.lower(bet_class).strip()
         parsed_bet_type = str.lower(str(bet_type)).strip()
+        bet_changed = False
+
+        if parsed_bet_class == "ah" or parsed_bet_class == "asian_handicap":
+            bet_changed = True
+
         if parsed_bet_type == "2" and "1x2" not in parsed_bet_class and "ml" not in parsed_bet_class:
             self.mod = mod * -1
             self.display_team = away_team
+            bet_changed = True
 
         if "ou" in parsed_bet_class or "overunder" in parsed_bet_class or "overunder_corners" in parsed_bet_class:
             if mod.is_integer():  # Check if the mod value is a whole number
                 self.mod = format(int(mod), "d")
+                bet_changed = True
             if parsed_bet_type == "o" or parsed_bet_type == "corners_o":
                 self.bet_type = "Over"
+                bet_changed = True
             if parsed_bet_type == "u" or parsed_bet_type == "corners_u":
                 self.bet_type = "Under"
+                bet_changed = True
+
+        if "asian_corners" in parsed_bet_class:
+            if mod.is_integer():  # Check if the mod value is a whole number
+                self.mod = format(float(mod), "0.1f")
+            if parsed_bet_type == "corners_2":
+                self.display_team = "Corner Handicap"
+                bet_changed = True
 
         if "1x2" in parsed_bet_class or "ml" in parsed_bet_class:
             self.mod = -0.5
+            bet_changed = True
             if parsed_bet_type == "l":
                 self.display_team = away_team
             if parsed_bet_type == "2":
@@ -68,6 +85,10 @@ class PrintModel:
         if "asian" in parsed_bet_class:
             if parsed_bet_type == "2":
                 self.display_team = away_team
+                bet_changed = True
+
+        if not bet_changed:
+            self.page_name = "Error: bet not changed"
 
     def get_sign(self):
         parsed_bet_class = str.lower(self.bet_class).strip()
@@ -82,8 +103,9 @@ class PrintModel:
 
     def display_mod(self):
         parsed_bet_class = str.lower(self.bet_class).strip()
+        parsed_bet_type = str.lower(str(self.bet_type)).strip()
         if "1x2" in parsed_bet_class:
-            if str.lower(str(self.bet_type)) == "x" or str.lower(str(self.bet_type)) == "d":
+            if parsed_bet_type == "x" or parsed_bet_type == "d":
                 return ""
         if "corners_ou" in parsed_bet_class or "overunder_corners" in parsed_bet_class:
             return str(self.mod) + " Corners "

@@ -54,7 +54,7 @@ class TestPrintModel(unittest.TestCase):
 
     def test_get_markdown_for_ml_class_away_anything_else(self):
         model = PrintModel("TestPage", 1.175, "TestLeague", "HomeTeam", "AwayTeam", "d", None, 2.63, "ml", 0)
-        expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- HomeTeam \\-0\\.5 @ 2\\.63\n"
+        expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Draw 0 @ 2\\.63\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
     def test_get_markdown_for_ml_class_draw(self):
@@ -118,6 +118,16 @@ class TestPrintModel(unittest.TestCase):
     def test_get_markdown_for_d_class_draw(self):
         model = PrintModel("TestPage", 1.175, "TestLeague", "HomeTeam", "AwayTeam", "D", None, 2.63, "ml", 0)
         expected_output = "__TestPage__\n\n_\\(1h 10min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Draw 0 @ 2\\.63\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
+    def test_get_markdown_for_asian_ou_with_text(self):
+        model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "corners_2", -3.0, 1.95, "asian_corners", 0)
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Corner Handicap \\-3\\.0 @ 1\\.95\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
+    def test_get_markdown_for_ou_with_random_text_should_show_err(self):
+        model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "corners_2", -3.0, 1.95, "random_corners", 0)
+        expected_output = "__Error: bet not changed__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- HomeTeam \\-3\\.0 @ 1\\.95\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
 
