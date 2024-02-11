@@ -122,7 +122,12 @@ class TestPrintModel(unittest.TestCase):
 
     def test_get_markdown_for_asian_ou_with_text(self):
         model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "corners_2", -3.0, 1.95, "asian_corners", 0)
-        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- Corner Handicap \\-3\\.0 @ 1\\.95\n"
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- HomeTeam \\-3 Corner Handicap @ 1\\.95\n"
+        self.assertEqual(model.get_markdown(), expected_output)
+
+    def test_get_markdown_for_asian_ou_with_text_corners_1(self):
+        model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "corners_1", -3.0, 1.95, "asian_corners", 0)
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- HomeTeam \\-3 Corners @ 1\\.95\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
     def test_get_markdown_for_ou_with_random_text_should_show_err(self):

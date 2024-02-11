@@ -66,9 +66,7 @@ class PrintModel:
 
         if "asian_corners" in parsed_bet_class:
             if mod.is_integer():  # Check if the mod value is a whole number
-                self.mod = format(float(mod), "0.1f")
-            if parsed_bet_type == "corners_2":
-                self.display_team = "Corner Handicap"
+                self.mod = format(int(mod), "d")
                 bet_changed = True
 
         if "1x2" in parsed_bet_class or "ml" in parsed_bet_class:
@@ -83,9 +81,7 @@ class PrintModel:
                 self.display_team = "Draw"
 
         if "asian" in parsed_bet_class:
-            if parsed_bet_type == "2":
-                self.display_team = away_team
-                bet_changed = True
+            bet_changed = True
 
         if not bet_changed:
             self.page_name = "Error: bet not changed"
@@ -96,7 +92,7 @@ class PrintModel:
         if self.mod is None:
             self.mod = 0
         if float(self.mod) > 0:
-            if "ou" in parsed_bet_class or "overunder" in parsed_bet_class or "overunder_corners" in parsed_bet_class:
+            if "ou" in parsed_bet_class or "overunder" in parsed_bet_class or "overunder_corners" in parsed_bet_class or "asian_corners" in parsed_bet_class:
                 return ""
             return "+"
         return ""
@@ -107,6 +103,11 @@ class PrintModel:
         if "1x2" in parsed_bet_class:
             if parsed_bet_type == "x" or parsed_bet_type == "d":
                 return ""
+        if "asian_corners" in parsed_bet_class:
+            if parsed_bet_type == "corners_2":
+                return str(self.mod) + " Corner Handicap "
+            if parsed_bet_type == "corners_1":
+                return str(self.mod) + " Corners "
         if "corners_ou" in parsed_bet_class or "overunder_corners" in parsed_bet_class:
             return str(self.mod) + " Corners "
         return str(self.mod) + " "
