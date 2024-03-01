@@ -70,16 +70,23 @@ and you need to do this for CORS and other errors, also it's safer
 3) invalidate cache in cloudfront
 
 **Back-end**
-1) cd forwarder-api/
-2) source myenv/bin/activate
-3) git pull
-4) python manage.py migrate (optional)
-5) screen -ls
-6) screen kill forwarder_botPID
-7) screen -dmS forwarder_bot python manage.py run_telethon
-8) screen kill forwarder_apiPID
-9) screen -dmS forwarder_api python manage.py runserver 0.0.0.0:8000 
-10) screen kill forwarder_scraperPID
-11) screen -dmS forwarder_scraper python manage.py run_scraper
+1) `cd forwarder-api/`
+2) `source myenv/bin/activate`
+3) `git pull`
+4) `python manage.py migrate` (optional)
+5) `screen -ls`
+6) `screen kill forwarder_botPID`
+7) `screen -dmS forwarder_bot python manage.py run_telethon`
+8) `screen kill forwarder_apiPID`
+9) `screen -dmS forwarder_api python manage.py runserver 0.0.0.0:8000` 
+10) `screen kill forwarder_scraperPID`
+11) `screen -dmS forwarder_scraper python manage.py run_scraper`
 12) test the bot
 13) test the api
+
+# How to update nginx cert in the server
+1) ssh to the server
+2) `docker ps` to get the container id of nginx
+3) `docker kill {nginxId}`
+4) `certbot certonly --force-renew -d {API_URL}`
+5) go to nginx folder `docker-compose up -d`
