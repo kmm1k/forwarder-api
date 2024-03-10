@@ -48,7 +48,7 @@ class PrintModel:
         if parsed_bet_class == "ah" or parsed_bet_class == "asian_handicap":
             bet_changed = True
 
-        if parsed_bet_type == "2" and "1x2" not in parsed_bet_class and "ml" not in parsed_bet_class:
+        if parsed_bet_type == "2" and "1x2" not in parsed_bet_class and "ml" not in parsed_bet_class and "asian" not in parsed_bet_class:
             self.mod = mod * -1
             self.display_team = away_team
             bet_changed = True
