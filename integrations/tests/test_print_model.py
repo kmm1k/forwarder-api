@@ -9,12 +9,12 @@ class TestPrintModel(unittest.TestCase):
 
     def test_get_markdown_for_ah_class_bet_type_string_2(self):
         model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "2", -0.5, 2.0, "ah", 0)
-        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\+0\\.5 @ 2\\.0\n"
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.0\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
     def test_get_markdown_for_ah_class_bet_type_int_2(self):
         model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", 2, -0.5, 2.0, "ah", 0)
-        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\+0\\.5 @ 2\\.0\n"
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.0\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
     def test_get_markdown_for_ah_class_bet_type_1(self):
