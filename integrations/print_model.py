@@ -68,6 +68,8 @@ class PrintModel:
                 bet_changed = True
 
         if "asian_corners" in parsed_bet_class:
+            if parsed_bet_type == "corners_2":
+                self.display_team = away_team
             if mod.is_integer():  # Check if the mod value is a whole number
                 self.mod = format(int(mod), "d")
                 bet_changed = True
