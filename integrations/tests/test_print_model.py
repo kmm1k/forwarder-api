@@ -9,12 +9,12 @@ class TestPrintModel(unittest.TestCase):
 
     def test_get_markdown_for_ah_class_bet_type_string_2(self):
         model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", "2", -0.5, 2.0, "ah", 0)
-        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\+0\\.5 @ 2\\.0\n"
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.0\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
     def test_get_markdown_for_ah_class_bet_type_int_2(self):
         model = PrintModel("TestPage", 2.5, "TestLeague", "HomeTeam", "AwayTeam", 2, -0.5, 2.0, "ah", 0)
-        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\+0\\.5 @ 2\\.0\n"
+        expected_output = "__TestPage__\n\n_\\(2h 30min\\)_\n*TestLeague*\nHomeTeam / AwayTeam \\- AwayTeam \\-0\\.5 @ 2\\.0\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
     def test_get_markdown_for_ah_class_bet_type_1(self):
@@ -97,7 +97,7 @@ class TestPrintModel(unittest.TestCase):
 
     def test_get_markdown_asian_bet_class_flipper(self):
         model = PrintModel("Bet365", 15.5, "Erovnuli Liga Georgia", "FC Telavi", "FC Saburtalo Tbilisi", 2, -0.25, 1.83, "asian", 0)
-        expected_output = "__Bet365__\n\n_\\(15h 30min\\)_\n*Erovnuli Liga Georgia*\nFC Telavi / FC Saburtalo Tbilisi \\- FC Saburtalo Tbilisi \\+0\\.25 @ 1\\.83\n"
+        expected_output = "__Bet365__\n\n_\\(15h 30min\\)_\n*Erovnuli Liga Georgia*\nFC Telavi / FC Saburtalo Tbilisi \\- FC Saburtalo Tbilisi \\-0\\.25 @ 1\\.83\n"
         self.assertEqual(model.get_markdown(), expected_output)
 
     def test_get_markdown_random_bet_class_flipper(self):
