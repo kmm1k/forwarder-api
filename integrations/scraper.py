@@ -75,13 +75,13 @@ class Scraper:
                 bet365_data.append(bet_line)
 
         # ORIGINAL SING SITE SCRAPING
-        logger.info(f"sing elements in list: {len(sing_data)}")
+        # logger.info(f"sing elements in list: {len(sing_data)}")
         new_bets = self.get_new_bets("sing_bets", sing_data)
         sing_message_queue = self.process_new_bets(new_bets, "Sing")
         message_queues["sing"] = sing_message_queue
 
         # ORIGINAL BET365 SITE SCRAPING
-        logger.info(f"bet365 elements in list: {len(bet365_data)}")
+        # logger.info(f"bet365 elements in list: {len(bet365_data)}")
         new_bets = self.get_new_bets("bet365_bets", bet365_data)
         bet365_message_queue = self.process_new_bets(new_bets, "Bet365")
         message_queues["bet365"] = bet365_message_queue
