@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 class Scraper:
     def __init__(self):
-        self.bet365Site = BetSite()
-        self.singSite = BetSite()
+        self.dashboard_v2_site = BetSite()
         # we should update this every time we get new data, to prevent memory leaks
         self.bets_dict = {}
         # has to be a dict, because we have 2 urls and data sources
@@ -30,27 +29,17 @@ class Scraper:
     def start(self):
         with open('./integrations/creds.yml', 'rb') as f:
             config = yaml.safe_load(f)
-        self.login_to_bet365(config)
-        self.login_to_sing(config)
+        self.login_to_dashboard_v2(config)
         asyncio.run(self.periodic_task(config))
 
-    def login_to_bet365(self, config):
-        username = config['bet365_username']
-        password = config['bet365_password']
-        login_url = config['bet365_login_url']
-        if self.bet365Site.login(username, password, login_url):
-            logger.info("Logged in successfully to bet365 bet site!")
+    def login_to_dashboard_v2(self, config):
+        username = config['get_data2_username']
+        password = config['get_data2_password']
+        login_url = config['get_data2_login_url']
+        if self.dashboard_v2_site.login(username, password, login_url):
+            logger.info("Logged in successfully to dashboard_v2_site bet site!")
         else:
-            logger.info("Failed to log in to bet365 bet site.")
-
-    def login_to_sing(self, config):
-        username = config['sing_username']
-        password = config['sing_password']
-        login_url = config['sing_login_url']
-        if self.singSite.login(username, password, login_url):
-            logger.info("Logged in successfully to sing bet site!")
-        else:
-            logger.info("Failed to log in to sing bet site.")
+            logger.info("Failed to log in to dashboard_v2_site bet site.")
 
     async def periodic_task(self, config):
         while True:
@@ -59,28 +48,46 @@ class Scraper:
             await asyncio.sleep(30)
 
     async def get_and_parse_data(self, config):
-        # message queue saves messages from both urls,
-        # we need to separate those, and send message to the correct chat
-        message_queues = {}
+        # now all of the data comes from the same site
+        # api now returns a field called dashboard_name, which we can use to separate the messages
+        # dashboard_name can be 'sing' or 'bet365'
+
+        message_queues = {"sing": [], "bet365": [], "bet365_clean": []}
+
+        # Fetch data from the new unified API endpoint
+        unified_api_url = config['get_data2_api_url']
+        unified_data_with_metadata = self.dashboard_v2_site.get_bets_data(unified_api_url)
+        if unified_data_with_metadata is None:
+            logger.error("Failed to fetch data from the unified API endpoint.")
+            return message_queues
+
+        unified_data = json.loads(unified_data_with_metadata['data'])
+
+        sing_data = []
+        bet365_data = []
+        # Process the data based on 'dashboard_name'
+        for bet_line in unified_data:
+            dashboard_name = bet_line.get('dashboard_name', '').lower()
+            if dashboard_name == 'sing':
+                sing_data.append(bet_line)
+
+            if dashboard_name == 'bet365':
+                bet365_data.append(bet_line)
 
         # ORIGINAL SING SITE SCRAPING
-        chat_sing_api_url = config['sing_api_url']
-        sing_data = self.singSite.get_bets_data(chat_sing_api_url)
-        # logger.info(f"sing elements in list: {len(json.loads(sing_data['data']))}")
-        new_bets = self.get_new_bets(chat_sing_api_url, sing_data['data'])
+        logger.info(f"sing elements in list: {len(sing_data)}")
+        new_bets = self.get_new_bets("sing_bets", sing_data)
         sing_message_queue = self.process_new_bets(new_bets, "Sing")
         message_queues["sing"] = sing_message_queue
 
         # ORIGINAL BET365 SITE SCRAPING
-        chat_bet365_api_url = config['bet365_api_url']
-        bet365_data = self.bet365Site.get_bets_data(chat_bet365_api_url)
-        # logger.info(f"bet365 elements in list: {len(json.loads(bet365_data['data']))}")
-        new_bets = self.get_new_bets(chat_bet365_api_url, bet365_data['data'])
+        logger.info(f"bet365 elements in list: {len(bet365_data)}")
+        new_bets = self.get_new_bets("bet365_bets", bet365_data)
         bet365_message_queue = self.process_new_bets(new_bets, "Bet365")
         message_queues["bet365"] = bet365_message_queue
 
-        # SPECIAL BET365 SITE SCRAPING (5 minute delay)
-        bet365_clean_new_bets = self.get_new_bets_based_on_uuid("bet365_clean", bet365_data['data'])
+        # SPECIAL BET365 SITE SCRAPING (1 second delay)
+        bet365_clean_new_bets = self.get_new_bets_based_on_uuid("bet365_clean", bet365_data)
         bet365_message_queue = self.process_new_bets_clean(bet365_clean_new_bets, "Bet365")
         message_queues["bet365_clean"] = bet365_message_queue
 
@@ -121,7 +128,7 @@ class Scraper:
                 # Add each message to the delay queue with its own timestamp
                 self.clean_delay_queue[message] = current_time
 
-        # Check the delay queue and send messages older than 5 minutes
+        # Check the delay queue and send messages older than 1 second
         for message, message_time in list(self.clean_delay_queue.items()):
             if current_time - message_time >= 1:  # 1 seconds
                 payload = {
@@ -141,7 +148,6 @@ class Scraper:
 
     def get_new_bets(self, url, data):
         new_bets = []
-        data = json.loads(data)
 
         parsed_bets = {}
         for item in data:
@@ -162,7 +168,6 @@ class Scraper:
 
     def get_new_bets_based_on_uuid(self, url, data):
         new_bets = []
-        data = json.loads(data)
 
         parsed_bets = {}
         for item in data:
@@ -221,4 +226,3 @@ class Scraper:
         if uuid in self.placed_bets:
             return str(self.placed_bets[uuid]['price'])
         return "Not placed yet"
-
