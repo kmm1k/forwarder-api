@@ -59,6 +59,13 @@ docs/_build/
 # PyBuilder
 target/
 
+# creds.yml for telegram bot
+telegram_bot/config.yml
+telegram_bot/old_config.yml
+
+# relay_creds.yml for relay bot
+integrations/relay_creds.yml
+
 # creds.yml for bet site integration
 integrations/creds.yml
 
