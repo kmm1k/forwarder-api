@@ -35,6 +35,14 @@ class Relay:
         help_pattern = f'\/help'
         exclude_commands = ['/awlist', '/awadd', '/awremove', '/help']
 
+        @bot.on(events.ChatAction())
+        async def handler(event):
+            # Send message of the chat id when added to chat
+            added = event.user_added or event.created or event.user_joined
+            me = await bot.get_me()
+            if added and event.user_id == me.id:
+                await bot.send_message(event.chat_id, f'chat id is: {event.chat_id}')
+
         @bot.on(events.NewMessage())
         async def handler(event: NewMessage.Event):
             if any(event.message.message.startswith(cmd) for cmd in exclude_commands):
@@ -45,11 +53,11 @@ class Relay:
             for i in self.channel_pairs:
                 if i[0] == event.chat_id:
                     target_id = i[1]
-                    file = await bot.download_media(event.message.media)
+                    file = await bot.download_media(event.message.media, file=bytes)
                     await bot.send_message(target_id, event.message.message, file=file)
                 elif i[1] == event.chat_id:
                     target_id = i[0]
-                    file = await bot.download_media(event.message.media)
+                    file = await bot.download_media(event.message.media, file=bytes)
                     await bot.send_message(target_id, event.message.message, file=file)
 
         @bot.on(events.NewMessage(pattern=list_pattern))
