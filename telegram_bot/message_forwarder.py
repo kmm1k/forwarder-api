@@ -64,7 +64,7 @@ class MessageForwarder:
             number = event.text.split(' ')[1]
             # save the number to file in clean_message_count.txt
             await write_to_file(number)
-            await bot.send_message(event.chat_id, f'Waiting for: {number} messages to send.')
+            await bot.send_message(event.chat_id, f'Waiting for {number} messages to send.')
 
         async def write_to_file(number):
             if number == 0 or number == '' or number == '0':
