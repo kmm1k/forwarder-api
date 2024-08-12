@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 import yaml
 from asgiref.sync import sync_to_async
@@ -31,6 +32,7 @@ class MessageForwarder:
         at_bot_pattern = f'(?i)@{self.bot_name}.+'
         at_tag_pattern = f'(?i)@.+'
         at_tag_grouper_pattern = f'(?i).*@\w+( |$)'
+        slash_start_pattern = f'(?i)/start\s*[0-9]+'
 
         @bot.on(events.ChatAction())
         async def handler(event):
@@ -52,6 +54,32 @@ class MessageForwarder:
         @bot.on(events.NewMessage(pattern=at_tag_grouper_pattern))
         async def handler(event: NewMessage.Event):
             await tag_grouper(event)
+
+        @bot.on(events.NewMessage(pattern=slash_start_pattern))
+        async def handler(event: NewMessage.Event):
+            # check if chat where command is run is in the config under clean_chat_id
+            if str(event.chat_id) != str(config['clean_chat_id']):
+                return
+            # get the number from the message
+            number = event.text.split(' ')[1]
+            # save the number to file in clean_message_count.txt
+            await write_to_file(number)
+            await bot.send_message(event.chat_id, f'Waiting for: {number} messages to send.')
+
+        async def write_to_file(number):
+            if number == 0 or number == '' or number == '0':
+                return
+            # deleting the file and writing to it
+            try:
+                os.remove('./clean_message_count.txt')
+            except Exception as e:
+                pass
+
+            try:
+                with open('./clean_message_count.txt', 'w') as f:
+                    f.write(str(number))
+            except Exception as e:
+                pass
 
         @bot.on(events.NewMessage(pattern=at_tag_pattern))
         async def handler(event: NewMessage.Event):

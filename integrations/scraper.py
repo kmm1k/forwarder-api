@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 import time
 
 import requests
@@ -25,6 +26,7 @@ class Scraper:
         self.last_updated = {}
         self.placed_bets = {}
         self.clean_delay_queue = {}
+        self.clean_message_count = 0
 
     def start(self):
         with open('./integrations/creds.yml', 'rb') as f:
@@ -136,9 +138,30 @@ class Scraper:
                     'text': message,
                     'parse_mode': 'MarkdownV2'
                 }
-                response = requests.post(telegram_url, data=payload)
+                # check if clean_message_count.txt has a number or if clean_message_count is > 0, then send a message
+                self.clean_message_count = self.get_clean_message_count()
+                if self.clean_message_count > 0:
+                    self.clean_message_count = self.clean_message_count - 1
+                    response = requests.post(telegram_url, data=payload)
                 # Remove the message from the queue after sending
                 del self.clean_delay_queue[message]
+
+    def get_clean_message_count(self):
+        if self.clean_message_count <= 0:
+            try:
+                with open('./clean_message_count.txt', 'r') as f:
+                    clean_message_count = int(f.read())
+            except Exception as e:
+                clean_message_count = 0
+            finally:
+                # delete file if exists
+                try:
+                    os.remove('./clean_message_count.txt')
+                except Exception as e:
+                    pass
+        else:
+            clean_message_count = self.clean_message_count
+        return clean_message_count
 
     def check_bet_for_placed_and_add_to_dict(self, bet):
         if bet['placed_count'] > 0:
