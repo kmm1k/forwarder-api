@@ -143,13 +143,13 @@ class Scraper:
                 if self.clean_message_count > 0:
                     self.clean_message_count = self.clean_message_count - 1
                     response = requests.post(telegram_url, data=payload)
-                if self.clean_message_count == 0:
-                    end_payload = {
-                        'chat_id': config['chat_bet365_clean_id'],
-                        'text': 'All messages sent!',
-                        'parse_mode': 'MarkdownV2'
-                    }
-                    requests.post(telegram_url, data=end_payload)
+                    if self.clean_message_count == 0:
+                        end_payload = {
+                            'chat_id': config['chat_bet365_clean_id'],
+                            'text': 'All messages sent\n',
+                            'parse_mode': 'MarkdownV2'
+                        }
+                        requests.post(telegram_url, data=end_payload)
                 # Remove the message from the queue after sending
                 del self.clean_delay_queue[message]
 
