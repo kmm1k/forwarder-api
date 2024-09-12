@@ -27,6 +27,7 @@ class Scraper:
         self.placed_bets = {}
         self.clean_delay_queue = {}
         self.clean_message_count = 0
+        self.bet365_last_updated = time.time()
 
     def start(self):
         with open('./integrations/creds.yml', 'rb') as f:
@@ -92,6 +93,12 @@ class Scraper:
         bet365_clean_new_bets = self.get_new_bets_based_on_uuid("bet365_clean", bet365_data)
         bet365_message_queue = self.process_new_bets_clean(bet365_clean_new_bets, "Bet365")
         message_queues["bet365_clean"] = bet365_message_queue
+
+        # clean bets that are older than 1 hour for bet365_clean
+        current_time = time.time()
+        if current_time - self.bet365_last_updated >= 1 * 60 * 60:
+            self.bet365_last_updated = current_time
+            self.bets_dict["bet365_clean"] = {}
 
         return message_queues
 
@@ -205,13 +212,16 @@ class Scraper:
 
         if url not in self.bets_dict:
             self.bets_dict[url] = parsed_bets
+            old_parsed_bets = self.bets_dict[url]
         else:
             old_parsed_bets = self.bets_dict[url]
             for key, value in parsed_bets.items():
                 if key not in old_parsed_bets:
                     new_bets.append(value)
 
-        self.bets_dict[url] = parsed_bets
+        # append to the dict
+        old_parsed_bets.update(parsed_bets)
+        self.bets_dict[url] = old_parsed_bets
         return new_bets
 
     def process_new_bets(self, new_bets, page_name):
