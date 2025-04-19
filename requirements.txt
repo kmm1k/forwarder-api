@@ -5,3 +5,7 @@ drf_yasg
 telethon
 pyyaml
 requests
+python-telegram-bot==20.*
+gspread
+google-auth
+PyYAML
