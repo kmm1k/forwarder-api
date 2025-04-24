@@ -6,6 +6,7 @@ telethon
 pyyaml
 requests
 python-telegram-bot==20.*
+python-telegram-bot[job-queue]==20.*
 gspread
 google-auth
 PyYAML
