@@ -175,7 +175,6 @@ async def assign_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text or ""
     match = ASSIGN_RE.search(text)
     if not match:
-        await update.message.reply_text("Usage: /assign @user;Description;YYYY-MM-DD")
         return
     ws = context.bot_data["ws"]
     assignee = f"@{match.group('user')}"
@@ -192,7 +191,6 @@ async def done_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text or ""
     match = DONE_RE.search(text)
     if not match:
-        await update.message.reply_text("Usage: /done 005")
         return
     ws = context.bot_data["ws"]
     ok, info = mark_done(ws, match.group('num'))
