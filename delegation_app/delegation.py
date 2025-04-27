@@ -55,11 +55,12 @@ EXPECTED_YAML_KEYS = {
     "sheet_id",
 }
 
-REMINDER_DAYS_DEFAULT = 2           # "due in ≤X days" threshold
-REMINDER_HOUR_LOCAL = 9             # daily reminder time (09:00 local timezone)
+REMINDER_DAYS_DEFAULT = 2  # "due in ≤X days" threshold
+REMINDER_HOUR_LOCAL = 9  # daily reminder time (09:00 local timezone)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)5s] %(name)s: %(message)s")
+
 
 def load_config(path: Path = CONFIG_PATH) -> dict:
     if not path.exists():
@@ -72,6 +73,7 @@ def load_config(path: Path = CONFIG_PATH) -> dict:
         logger.error("Config missing keys: %s", ", ".join(sorted(missing)))
         sys.exit(1)
     return cfg
+
 
 ############################################################
 # Google Sheets backend
@@ -137,6 +139,7 @@ def due_within(ws, days: int) -> List[Tuple[str, str, str, int]]:
             upcoming.append((row[0], row[1], row[3], int(row[5])))
     return upcoming
 
+
 ############################################################
 # Reminder helpers (async) — shared by Job & /remind cmd
 ############################################################
@@ -156,10 +159,12 @@ async def _send_reminders(bot, ws, days: int) -> int:
             logger.warning("Failed to send reminder to chat %s: %s", chat_id, e)
     return count
 
+
 async def reminder_job(context: CallbackContext):
     days = context.job.data.get("days", REMINDER_DAYS_DEFAULT)
     ws = context.application.bot_data["ws"]
     await _send_reminders(context.bot, ws, days)
+
 
 ############################################################
 # Telegram bot handlers
@@ -217,9 +222,26 @@ async def remind_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"📣 Sent {sent} reminder(s) for tasks due within {days} day(s).")
 
 
-async def unknown_handler(update: Update, _):
-    if update.message:
-        await update.message.reply_text("Sorry, I didn't understand that. Try /assign, /done or /remind.")
+HELP_TEXT = """\
+*Delegation Workflow Bot — Commands*
+
+• `/assign @user;Task description;YYYY-MM-DD`
+  - Create a new task (TSK###) for `@user`, due on the given date.
+
+• `/done NNN`
+  - Mark task *TSKNNN* complete (e.g. `/done 005`).
+
+• `/help`
+  - Show this message.
+"""
+
+
+async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_markdown_v2(
+        HELP_TEXT % {"days": REMINDER_DAYS_DEFAULT},
+        disable_web_page_preview=True,
+    )
+
 
 ############################################################
 # Entry point (no CLI — one script, one job queue)
@@ -255,6 +277,7 @@ def main():
     application.add_handler(CommandHandler("assign", assign_handler))
     application.add_handler(CommandHandler("done", done_handler))
     application.add_handler(CommandHandler("remind", remind_handler))
+    application.add_handler(CommandHandler("help", help_handler))
 
     # Mention (@bot assign...) support (chats)
     mention_assign = filters.TEXT & filters.Regex(re.compile(rf"@{cfg['bot_name']}\s+assign", re.I))
@@ -263,10 +286,8 @@ def main():
     application.add_handler(MessageHandler(mention_assign, assign_handler))
     application.add_handler(MessageHandler(mention_done, done_handler))
 
-    # Fallback
-    application.add_handler(MessageHandler(filters.ALL, unknown_handler))
-
-    logger.info("Bot started as %s (reminders: daily %02d:00, threshold ≤%dd)", cfg["bot_name"], hour, REMINDER_DAYS_DEFAULT)
+    logger.info("Bot started as %s (reminders: daily %02d:00, threshold ≤%dd)", cfg["bot_name"], hour,
+                REMINDER_DAYS_DEFAULT)
     application.run_polling()
 
 
