@@ -14,7 +14,6 @@ Key additions
 (Everything else from the original v1.0 is retained.)
 """
 
-import asyncio
 import datetime as _dt
 import logging
 import os
@@ -225,14 +224,14 @@ async def remind_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 HELP_TEXT = """\
 *Delegation Workflow Bot — Commands*
 
-• `/assign @user;Task description;YYYY-MM-DD`
-  - Create a new task (TSK###) for `@user`, due on the given date.
+• `/assign @user;Task description;YYYY\\-MM\\-DD`
+  \\- Create a new task \\(TSK\\#\\#\\#\\) for @user, due on the given date\\.
 
 • `/done NNN`
-  - Mark task *TSKNNN* complete (e.g. `/done 005`).
+  \\- Mark task *TSKNNN* complete \\(e\\.g\\. /done 005\\)\\.
 
 • `/help`
-  - Show this message.
+  \\- Show this message\\.
 """
 
 

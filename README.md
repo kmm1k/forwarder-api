@@ -84,7 +84,7 @@ and you need to do this for CORS and other errors, also it's safer
 12) `screen kill forwarder_relayPID`
 13) `screen -dmS forwarder_relay python manage.py run_relay`
 14) `screen kill delegatorPID`
-15) `cd /delegation_app`
+15) `cd delegation_app`
 16) `screen -dmS delegator python delegation.py`
 17) test the bot
 18) test the api
