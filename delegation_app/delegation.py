@@ -40,6 +40,7 @@ try:
         JobQueue,
         CallbackContext,
     )
+    from telegram.helpers import escape_markdown
 except ImportError:  # pragma: no cover
     sys.exit("\n[!] python-telegram-bot v20+ is required. Install with: pip install python-telegram-bot --pre\n")
 
@@ -220,6 +221,70 @@ async def remind_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     sent = await _send_reminders(context.bot, ws, days)
     await update.message.reply_text(f"📣 Sent {sent} reminder(s) for tasks due within {days} day(s).")
 
+def _collect_tasks(
+        ws,
+        assignee_tag: str,
+        include_done: bool = False,
+) -> List[Tuple[str, str, str, str]]:
+    """Return [(task_id, desc, deadline, status), …] for the assignee."""
+    rows = ws.get_all_values()[1:]   # skip header
+    tasks: List[Tuple[str, str, str, str]] = []
+    for row in rows:
+        if not row:
+            continue
+        task_id, assignee, desc, deadline, status = row[:5]
+        if assignee != assignee_tag:
+            continue
+        if not include_done and status != "Pending":
+            continue
+        tasks.append((task_id, desc, deadline, status))
+    return tasks
+
+def _format_tasks(task_rows: List[Tuple[str, str, str, str]]) -> str:
+    """Return a Markdown-V2-safe list of tasks, or a celebratory message."""
+    if not task_rows:
+        # Need to escape each “!” for Markdown-V2
+        return "🎉 Good job\\! You have no more tasks\\! 🏖️"
+
+    lines = []
+    for task_id, desc, dl, status in task_rows:
+        safe_desc   = escape_markdown(desc,   version=2)
+        safe_dl     = escape_markdown(dl,     version=2)
+        safe_status = escape_markdown(status, version=2)
+        lines.append(
+            f"• `{task_id}` – {safe_desc} \\(due {safe_dl}, {safe_status}\\)"
+        )
+    return "\n".join(lines)
+
+async def list_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Reply with *pending* tasks assigned to the caller."""
+    if not update.message:
+        return
+    username = update.effective_user.username
+    if not username:
+        await update.message.reply_text(
+            "You don’t appear to have a Telegram @username set, "
+            "so I can’t match tasks to you\\."
+        )
+        return
+    ws = context.bot_data["ws"]
+    tasks = _collect_tasks(ws, f"@{username}", include_done=False)
+    await update.message.reply_markdown_v2(_format_tasks(tasks))
+
+async def list_all_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Reply with *all* tasks (Pending + Done) assigned to the caller."""
+    if not update.message:
+        return
+    username = update.effective_user.username
+    if not username:
+        await update.message.reply_text(
+            "You don’t appear to have a Telegram @username set, "
+            "so I can’t match tasks to you\\."
+        )
+        return
+    ws = context.bot_data["ws"]
+    tasks = _collect_tasks(ws, f"@{username}", include_done=True)
+    await update.message.reply_markdown_v2(_format_tasks(tasks))
 
 HELP_TEXT = """\
 *Delegation Workflow Bot — Commands*
@@ -229,6 +294,12 @@ HELP_TEXT = """\
 
 • `/done NNN`
   \\- Mark task *TSKNNN* complete \\(e\\.g\\. /done 005\\)\\.
+
+• `/list`
+  \\- Show all pending tasks assigned to you\\.
+  
+• `/listall`
+  \\- Show all tasks assigned to you, even done tasks\\.
 
 • `/help`
   \\- Show this message\\.
@@ -277,6 +348,8 @@ def main():
     application.add_handler(CommandHandler("done", done_handler))
     application.add_handler(CommandHandler("remind", remind_handler))
     application.add_handler(CommandHandler("help", help_handler))
+    application.add_handler(CommandHandler("list", list_handler))
+    application.add_handler(CommandHandler("listall", list_all_handler))
 
     # Mention (@bot assign...) support (chats)
     mention_assign = filters.TEXT & filters.Regex(re.compile(rf"@{cfg['bot_name']}\s+assign", re.I))
