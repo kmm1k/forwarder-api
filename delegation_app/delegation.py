@@ -59,7 +59,7 @@ REMINDER_DAYS_DEFAULT = 2  # "due in ≤X days" threshold
 REMINDER_HOUR_LOCAL = 9  # daily reminder time (09:00 local timezone)
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)5s] %(name)s: %(message)s")
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s [%(levelname)5s] %(name)s: %(message)s")
 
 
 def load_config(path: Path = CONFIG_PATH) -> dict:
