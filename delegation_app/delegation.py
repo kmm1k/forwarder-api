@@ -109,20 +109,23 @@ def _next_task_id(ws) -> str:
 def add_task(ws, assignee: str, description: str, deadline: str, chat_id: int) -> str:
     task_id = _next_task_id(ws)
     ws.append_row(
-        [task_id, assignee, description, deadline, "Pending", str(chat_id)],
+        [task_id, assignee, description, deadline, "Pending", str(chat_id), 0],
         value_input_option="USER_ENTERED",
     )
     return task_id
 
 
-def mark_done(ws, numeric_id: str) -> Tuple[bool, str]:
+def _update_progress(ws, numeric_id: str, percent: int) -> Tuple[bool, str]:
     task_id = f"TSK{int(numeric_id):03d}"
     rows = ws.get_all_values()
     for idx, row in enumerate(rows, start=1):
         if row and row[0] == task_id:
-            if row[4] == "Done":
-                return False, "already_done"
-            ws.update_cell(idx, 5, "Done")
+            # write percentage
+            ws.update_cell(idx, 7, percent)  # col G
+            if percent == 100 and row[4] != "Done":
+                ws.update_cell(idx, 5, "Done")  # col E
+            if percent != 100 and row[4] != "Pending":
+                ws.update_cell(idx, 5, "Pending")
             return True, task_id
     return False, "not_found"
 
@@ -171,7 +174,7 @@ async def reminder_job(context: CallbackContext):
 ############################################################
 
 ASSIGN_RE = re.compile(r"/assign\s+@(?P<user>\w+);(?P<desc>[^;]+);\s?(?P<date>\d{4}-\d{2}-\d{2})", re.I)
-DONE_RE = re.compile(r"/done\s+(?P<num>\d{3})", re.I)
+DONE_RE = re.compile(r"/done\s+(?P<num>\d{3})(?:\s+(?P<pct>\d{1,3})%?)?", re.I)
 
 
 async def assign_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -197,15 +200,27 @@ async def done_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     match = DONE_RE.search(text)
     if not match:
         return
-    ws = context.bot_data["ws"]
-    ok, info = mark_done(ws, match.group('num'))
-    if not ok:
-        if info == "already_done":
-            await update.message.reply_text("This task was already marked Done.")
-        else:
-            await update.message.reply_text("⚠️ Task not found. Check the number and try again.")
+
+    pct_raw = match.group('pct')
+    try:
+        percent = 100 if pct_raw is None else int(pct_raw)
+    except ValueError:
+        await update.message.reply_text("Percentage must be 0–100.")
         return
-    await update.message.reply_text(f"✅ {info} marked complete. Great job!")
+    if not 0 <= percent <= 100:
+        await update.message.reply_text("Percentage must be between 0 and 100.")
+        return
+
+    ws = context.bot_data["ws"]
+    ok, info = _update_progress(ws, match.group('num'), percent)
+    if not ok:
+        await update.message.reply_text("⚠️ Task not found. Check the number and try again.")
+        return
+
+    if percent == 100:
+        await update.message.reply_text(f"✅ {info} marked complete. Great job!")
+    else:
+        await update.message.reply_text(f"📈 {info} updated to {percent}%. Keep going!")
 
 
 async def remind_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -221,40 +236,42 @@ async def remind_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     sent = await _send_reminders(context.bot, ws, days)
     await update.message.reply_text(f"📣 Sent {sent} reminder(s) for tasks due within {days} day(s).")
 
+
 def _collect_tasks(
         ws,
         assignee_tag: str,
         include_done: bool = False,
 ) -> List[Tuple[str, str, str, str]]:
-    """Return [(task_id, desc, deadline, status), …] for the assignee."""
-    rows = ws.get_all_values()[1:]   # skip header
-    tasks: List[Tuple[str, str, str, str]] = []
+    rows = ws.get_all_values()[1:]
+    tasks = []
     for row in rows:
         if not row:
             continue
-        task_id, assignee, desc, deadline, status = row[:5]
+        task_id, assignee, desc, deadline, status, chat_id, *rest = row
+        pct = int(rest[0]) if rest else 0
         if assignee != assignee_tag:
             continue
         if not include_done and status != "Pending":
             continue
-        tasks.append((task_id, desc, deadline, status))
+        tasks.append((task_id, desc, deadline, status, pct))
     return tasks
 
-def _format_tasks(task_rows: List[Tuple[str, str, str, str]]) -> str:
-    """Return a Markdown-V2-safe list of tasks, or a celebratory message."""
+
+def _format_tasks(task_rows: List[Tuple[str, str, str, str, int]]) -> str:
     if not task_rows:
-        # Need to escape each “!” for Markdown-V2
         return "🎉 Good job\\! You have no more tasks\\! 🏖️"
 
     lines = []
-    for task_id, desc, dl, status in task_rows:
-        safe_desc   = escape_markdown(desc,   version=2)
-        safe_dl     = escape_markdown(dl,     version=2)
+    for task_id, desc, dl, status, pct in task_rows:
+        safe_desc = escape_markdown(desc, version=2)
+        safe_dl = escape_markdown(dl, version=2)
         safe_status = escape_markdown(status, version=2)
+        safe_pct = escape_markdown(str(pct), version=2)
         lines.append(
-            f"• `{task_id}` – {safe_desc} \\(due {safe_dl}, {safe_status}\\)"
+            f"• `{task_id}` – {safe_desc} \\(due {safe_dl}, {safe_status}, {safe_pct}%\\)"
         )
     return "\n".join(lines)
+
 
 async def list_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Reply with *pending* tasks assigned to the caller."""
@@ -271,6 +288,7 @@ async def list_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tasks = _collect_tasks(ws, f"@{username}", include_done=False)
     await update.message.reply_markdown_v2(_format_tasks(tasks))
 
+
 async def list_all_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Reply with *all* tasks (Pending + Done) assigned to the caller."""
     if not update.message:
@@ -286,6 +304,7 @@ async def list_all_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     tasks = _collect_tasks(ws, f"@{username}", include_done=True)
     await update.message.reply_markdown_v2(_format_tasks(tasks))
 
+
 HELP_TEXT = """\
 *Delegation Workflow Bot — Commands*
 
@@ -294,6 +313,9 @@ HELP_TEXT = """\
 
 • `/done NNN`
   \\- Mark task *TSKNNN* complete \\(e\\.g\\. /done 005\\)\\.
+
+• `/done NNN percentage%`
+  \\- Mark task *TSKNNN* partially complete \\(e\\.g\\. /done 005 50%\\)\\.
 
 • `/list`
   \\- Show all pending tasks assigned to you\\.
@@ -308,7 +330,7 @@ HELP_TEXT = """\
 
 async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_markdown_v2(
-        HELP_TEXT % {"days": REMINDER_DAYS_DEFAULT},
+        HELP_TEXT,
         disable_web_page_preview=True,
     )
 
