@@ -175,7 +175,7 @@ async def reminder_job(context: CallbackContext):
 # Telegram bot handlers
 ############################################################
 
-ASSIGN_RE = re.compile(r"/assign\s+@(?P<user>\w+);(?P<desc>[^;]+);\s?(?P<date>\d{4}-\d{2}-\d{2})", re.I)
+ASSIGN_RE = re.compile(r"/assign\s+(?P<users>[^;]+);(?P<desc>[^;]+);\s?(?P<date>\d{4}-\d{2}-\d{2})", re.I)
 DONE_RE = re.compile(r"/done\s+(?P<num>\d{3})(?:\s+(?P<pct>\d{1,3})%?)?", re.I)
 
 
@@ -186,13 +186,39 @@ async def assign_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     match = ASSIGN_RE.search(text)
     if not match:
         return
-    ws = context.bot_data["ws"]
-    assignee = f"@{match.group('user')}"
-    description = match.group('desc').strip()
-    deadline = match.group('date')
 
-    task_id = add_task(ws, assignee, description, deadline, update.effective_chat.id)
-    await update.message.reply_text(f"✅ {task_id} assigned to {assignee}, due {deadline}.")
+    ws = context.bot_data["ws"]
+    users_raw = match.group("users").strip()
+    description = match.group("desc").strip()
+    deadline = match.group("date")
+
+    assignees: List[str] = []
+    for part in users_raw.split("+"):
+        tag = part.strip()
+        if not tag:
+            continue
+        if not tag.startswith("@"):
+            tag = f"@{tag}"
+        assignees.append(tag)
+
+    if not assignees:
+        await update.message.reply_text("⚠️ No valid usernames provided after /assign.")
+        return
+
+    created: List[Tuple[str, str]] = []  # (task_id, assignee)
+    for assignee in assignees:
+        task_id = add_task(ws, assignee, description, deadline, update.effective_chat.id)
+        created.append((task_id, assignee))
+
+    # Build feedback message
+    if len(created) == 1:
+        task_id, assignee = created[0]
+        await update.message.reply_text(f"✅ {task_id} assigned to {assignee}, due {deadline}.")
+    else:
+        lines = [f"✅ Created {len(created)} tasks (due {deadline}):"]
+        for task_id, assignee in created:
+            lines.append(f"• {task_id} → {assignee}")
+        await update.message.reply_text("\n".join(lines))
 
 
 async def done_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -322,6 +348,10 @@ HELP_TEXT = """\
 
 • `/assign @user;Task description;YYYY\\-MM\\-DD`
   \\- Create a new task \\(TSK\\#\\#\\#\\) for @user, due on the given date\\.
+  
+• `/assign @user1+@user2;Task description;YYYY\\-MM\\-DD`
+  \\- Create a new task \\(TSK\\#\\#\\#\\) for multiple users
+  \\- @user1 and @user2 and so on \\.
 
 • `/done NNN`
   \\- Mark task *TSKNNN* complete \\(e\\.g\\. /done 005\\)\\.
