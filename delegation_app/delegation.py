@@ -115,11 +115,13 @@ def add_task(ws, assignee: str, description: str, deadline: str, chat_id: int) -
     return task_id
 
 
-def _update_progress(ws, numeric_id: str, percent: int) -> Tuple[bool, str]:
+def _update_progress(ws, numeric_id: str, percent: int, user_tag: str) -> Tuple[bool, str]:
     task_id = f"TSK{int(numeric_id):03d}"
     rows = ws.get_all_values()
     for idx, row in enumerate(rows, start=1):
         if row and row[0] == task_id:
+            if row[1] != user_tag:
+                return False, "unauthorized"
             # write percentage
             ws.update_cell(idx, 7, percent)  # col G
             if percent == 100 and row[4] != "Done":
@@ -201,6 +203,12 @@ async def done_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not match:
         return
 
+    username = update.effective_user.username
+    if not username:
+        await update.message.reply_text("You need a Telegram @username set to mark tasks done.")
+        return
+    user_tag = f"@{username}"
+
     pct_raw = match.group('pct')
     try:
         percent = 100 if pct_raw is None else int(pct_raw)
@@ -212,9 +220,13 @@ async def done_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     ws = context.bot_data["ws"]
-    ok, info = _update_progress(ws, match.group('num'), percent)
+    ok, info = _update_progress(ws, match.group('num'), percent, user_tag)
+
     if not ok:
-        await update.message.reply_text("⚠️ Task not found. Check the number and try again.")
+        if info == "unauthorized":
+            await update.message.reply_text("⚠️ Only the assignee can update this task.")
+        else:  # not_found
+            await update.message.reply_text("⚠️ Task not found. Check the number and try again.")
         return
 
     if percent == 100:
