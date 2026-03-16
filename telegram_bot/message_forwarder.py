@@ -27,6 +27,8 @@ class MessageForwarder:
                              config["api_id"],
                              config["api_hash"])
         await bot.start(bot_token=config["bot_token"])
+        me = await bot.get_me()
+        bot_user_id = me.id
         logger.info("loaded configs and starting")
 
         at_bot_pattern = f'(?i)@{self.bot_name}.+'
@@ -115,6 +117,8 @@ class MessageForwarder:
 
         @bot.on(events.NewMessage(pattern=at_bot_pattern))
         async def handler(event: NewMessage.Event):
+            if event.sender_id == bot_user_id:
+                return
             await from_to_forwarding(event)
             await to_from_forwarding(event)
 

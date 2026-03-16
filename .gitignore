@@ -61,6 +61,7 @@ target/
 
 # creds.yml for telegram bot
 telegram_bot/config.yml
+telegram_bot/2025_config.yml
 telegram_bot/old_config.yml
 
 # relay_creds.yml for relay bot
